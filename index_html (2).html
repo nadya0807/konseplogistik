@@ -1,0 +1,3980 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>MPI Konsep Logistik — Bidang MPLB</title>
+  <style>
+    /* ==========================================================================
+       1. PALET WARNA SOFT & COLORFUL + MODE GELAP OTOMATIS
+       ========================================================================== */
+    :root {
+      --bg-page: #f5f9ff;
+      --bg-surface: #ffffff;
+      --bg-subtle: #e0f2fe;
+      --bg-card-alt: #f8fbff;
+      --text-main: #1e293b;
+      --text-muted: #52637a;
+      --text-inverse: #ffffff;
+
+      /* Warna Utama & Aksen Pastel-Vibrant */
+      --primary: #1d4ed8;
+      --primary-soft: #dbeafe;
+      --secondary: #0d9488;
+      --secondary-soft: #ccfbf1;
+      --sky: #0284c7;
+      --sky-soft: #e0f2fe;
+      --accent: #f59e0b;
+      --accent-dark: #b45309;
+      --accent-soft: #fef3c7;
+      --coral: #f97316;
+      --coral-soft: #ffedd5;
+      --lavender: #7c3aed;
+      --lavender-soft: #ede9fe;
+
+      --success: #15803d;
+      --success-soft: #dcfce7;
+      --danger: #be123c;
+      --danger-soft: #ffe4e6;
+      --border: #dbe7f5;
+      --shadow: 0 10px 28px -6px rgba(29, 78, 216, 0.09), 0 4px 10px -4px rgba(13, 148, 136, 0.06);
+      --radius: 20px;
+      --radius-sm: 12px;
+      --focus-ring: 0 0 0 3.5px rgba(245, 158, 11, 0.48);
+
+      --font-display: ui-rounded, "SF Pro Rounded", "Segoe UI", system-ui, -apple-system, sans-serif;
+      --font-body: system-ui, -apple-system, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    }
+
+    @media (prefers-color-scheme: dark) {
+      :root {
+        --bg-page: #0c1426;
+        --bg-surface: #141f38;
+        --bg-subtle: #1b2c4d;
+        --bg-card-alt: #101a30;
+        --text-main: #f1f5f9;
+        --text-muted: #cbd5e1;
+        --text-inverse: #ffffff;
+
+        --primary: #60a5fa;
+        --primary-soft: #1e3a6e;
+        --secondary: #2dd4bf;
+        --secondary-soft: #13403e;
+        --sky: #38bdf8;
+        --sky-soft: #163654;
+        --accent: #fbbf24;
+        --accent-dark: #fde68a;
+        --accent-soft: #3d2e12;
+        --coral: #fb923c;
+        --coral-soft: #432412;
+        --lavender: #c4b5fd;
+        --lavender-soft: #2e2152;
+
+        --success: #4ade80;
+        --success-soft: #133b25;
+        --danger: #fda4af;
+        --danger-soft: #471623;
+        --border: #2a3b5c;
+        --shadow: 0 10px 30px rgba(0, 0, 0, 0.45);
+      }
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      font-family: var(--font-body);
+      font-size: 16.5px;
+      line-height: 1.68;
+      color: var(--text-main);
+      background:
+        radial-gradient(circle at 8% 12%, rgba(56, 189, 248, 0.16) 0%, transparent 36%),
+        radial-gradient(circle at 92% 18%, rgba(45, 212, 191, 0.14) 0%, transparent 38%),
+        radial-gradient(circle at 80% 85%, rgba(251, 191, 36, 0.12) 0%, transparent 40%),
+        var(--bg-page);
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+    }
+
+    /* ==========================================================================
+       2. SIDEBAR RAMPING (LOGIN SISWA & LOGIN GURU PIN) + TATA LETAK RAPI
+       ========================================================================== */
+    .app-shell {
+      display: flex;
+      min-height: 100vh;
+      width: 100%;
+    }
+
+    .sidebar {
+      width: 256px;
+      flex-shrink: 0;
+      background: var(--bg-surface);
+      border-right: 1.5px solid var(--border);
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      padding: 16px 14px;
+      position: sticky;
+      top: 0;
+      height: 100vh;
+      overflow-y: auto;
+      z-index: 60;
+      box-shadow: 2px 0 14px rgba(29, 78, 216, 0.04);
+      transition: width 0.24s ease, padding 0.24s ease, opacity 0.2s ease, transform 0.24s ease;
+    }
+
+    .app-shell.sidebar-collapsed .sidebar {
+      width: 0;
+      padding-left: 0;
+      padding-right: 0;
+      border-right: none;
+      overflow: hidden;
+      opacity: 0;
+      pointer-events: none;
+    }
+
+    .sidebar-brand {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px;
+      padding: 10px 10px 10px 12px;
+      border-radius: 14px;
+      background: linear-gradient(135deg, var(--sky-soft) 0%, var(--secondary-soft) 100%);
+      border: 1.5px solid var(--border);
+      margin-bottom: 14px;
+    }
+
+    .sidebar-close-btn {
+      min-width: 44px;
+      min-height: 44px;
+      border-radius: 11px;
+      border: 1.5px solid var(--border);
+      background: var(--bg-surface);
+      color: var(--text-main);
+      font-family: var(--font-display);
+      font-weight: 800;
+      font-size: 1rem;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+      transition: background 0.16s ease, color 0.16s ease, border-color 0.16s ease;
+    }
+
+    .sidebar-close-btn:hover {
+      background: var(--danger-soft);
+      color: var(--danger);
+      border-color: var(--danger);
+    }
+
+    .sidebar-role-menu {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      margin-bottom: 16px;
+    }
+
+    .role-btn {
+      width: 100%;
+      min-height: 46px;
+      padding: 10px 14px;
+      border: 1.5px solid var(--border);
+      border-radius: 13px;
+      background: var(--bg-card-alt);
+      color: var(--text-main);
+      font-family: var(--font-display);
+      font-weight: 800;
+      font-size: 0.93rem;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: flex-start;
+      gap: 9px;
+      transition: background 0.18s ease, color 0.18s ease, border-color 0.18s ease, transform 0.14s ease;
+    }
+
+    .role-btn:hover {
+      border-color: var(--sky);
+      transform: translateX(2px);
+    }
+
+    .role-btn.active {
+      background: linear-gradient(135deg, #2563eb 0%, #0284c7 100%);
+      color: #ffffff;
+      border-color: transparent;
+      box-shadow: 0 4px 12px rgba(37, 99, 235, 0.22);
+    }
+
+    .role-btn.teacher-active {
+      background: linear-gradient(135deg, #f59e0b 0%, #f97316 100%);
+      color: #1e293b;
+      border-color: transparent;
+      box-shadow: 0 4px 12px rgba(245, 158, 11, 0.25);
+    }
+
+    .sidebar-section-label {
+      font-family: var(--font-display);
+      font-size: 0.76rem;
+      font-weight: 800;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      color: var(--text-muted);
+      padding: 0 4px;
+      margin: 6px 0 8px;
+    }
+
+    .side-nav-item {
+      width: 100%;
+      min-height: 44px;
+      padding: 9px 12px;
+      border-radius: 11px;
+      border: 1.5px solid var(--border);
+      background: var(--bg-card-alt);
+      color: var(--text-main);
+      font-family: var(--font-display);
+      font-size: 0.88rem;
+      font-weight: 700;
+      text-align: left;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin-bottom: 7px;
+      transition: background 0.16s ease, border-color 0.16s ease;
+    }
+
+    .side-nav-item:hover {
+      background: var(--sky-soft);
+      border-color: var(--sky);
+    }
+
+    .sidebar-status-box {
+      padding: 12px;
+      border-radius: 14px;
+      background: var(--bg-card-alt);
+      border: 1.5px solid var(--border);
+      font-size: 0.85rem;
+    }
+
+    .main-wrap {
+      flex: 1;
+      min-width: 0;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .mobile-drawer-btn {
+      display: inline-flex;
+      min-height: 44px;
+      min-width: 44px;
+      padding: 6px 13px;
+      border-radius: 12px;
+      border: 1.5px solid rgba(255, 255, 255, 0.38);
+      background: rgba(255, 255, 255, 0.2);
+      color: #ffffff;
+      font-family: var(--font-display);
+      font-weight: 800;
+      font-size: 0.88rem;
+      cursor: pointer;
+      align-items: center;
+      gap: 6px;
+      transition: background 0.16s ease;
+    }
+
+    .mobile-drawer-btn:hover {
+      background: rgba(255, 255, 255, 0.3);
+    }
+
+    .sidebar-backdrop {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(15, 23, 42, 0.48);
+      z-index: 55;
+    }
+
+    @media (max-width: 960px) {
+      .sidebar {
+        position: fixed;
+        left: 0;
+        top: 0;
+        bottom: 0;
+        width: 268px;
+        transform: translateX(-105%);
+      }
+      .app-shell.sidebar-collapsed .sidebar {
+        width: 268px;
+        padding: 16px 14px;
+        opacity: 1;
+        pointer-events: auto;
+      }
+      .sidebar.open {
+        transform: translateX(0);
+      }
+      .sidebar-backdrop.open {
+        display: block;
+      }
+    }
+
+    .teacher-subcard {
+      border: 1.5px solid var(--border);
+      border-radius: 16px;
+      padding: 16px;
+      margin-bottom: 14px;
+      background: var(--bg-card-alt);
+    }
+
+    .score-mini-input {
+      min-height: 44px !important;
+      padding: 8px 10px !important;
+      text-align: center;
+      font-weight: 800;
+    }
+
+    button:focus-visible,
+    input:focus-visible,
+    textarea:focus-visible,
+    select:focus-visible,
+    [tabindex]:focus-visible {
+      outline: none;
+      box-shadow: var(--focus-ring);
+    }
+
+    .sr-only {
+      position: absolute;
+      width: 1px;
+      height: 1px;
+      padding: 0;
+      margin: -1px;
+      overflow: hidden;
+      clip: rect(0, 0, 0, 0);
+      border: 0;
+    }
+
+    /* ==========================================================================
+       3. HEADER SOFT-OCEAN, STEPPER, & BAR PROGRES
+       ========================================================================== */
+    .topbar {
+      background: linear-gradient(125deg, #1e40af 0%, #0284c7 52%, #0d9488 100%);
+      color: #ffffff;
+      padding: 14px 18px 16px;
+      box-shadow: 0 6px 22px rgba(2, 132, 199, 0.22);
+      position: sticky;
+      top: 0;
+      z-index: 40;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.22);
+    }
+
+    .topbar-inner {
+      max-width: 1040px;
+      margin: 0 auto;
+    }
+
+    .topbar-row {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+    }
+
+    .brand-title {
+      font-family: var(--font-display);
+      font-size: 1.18rem;
+      font-weight: 800;
+      letter-spacing: -0.01em;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .brand-icon-wrap {
+      width: 36px;
+      height: 36px;
+      border-radius: 11px;
+      background: rgba(255, 255, 255, 0.2);
+      border: 1px solid rgba(255, 255, 255, 0.35);
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+    }
+
+    .student-pill {
+      background: rgba(255, 255, 255, 0.2);
+      backdrop-filter: blur(6px);
+      border: 1px solid rgba(255, 255, 255, 0.38);
+      padding: 6px 14px;
+      border-radius: 999px;
+      font-size: 0.88rem;
+      font-weight: 700;
+    }
+
+    .progress-wrap {
+      margin-top: 11px;
+    }
+
+    .progress-meta {
+      display: flex;
+      justify-content: space-between;
+      font-size: 0.85rem;
+      font-weight: 700;
+      margin-bottom: 5px;
+      opacity: 0.96;
+    }
+
+    .progress-track {
+      width: 100%;
+      height: 11px;
+      background: rgba(255, 255, 255, 0.24);
+      border-radius: 999px;
+      overflow: hidden;
+      padding: 2px;
+    }
+
+    .progress-fill {
+      height: 100%;
+      width: 0%;
+      background: linear-gradient(90deg, #fde047 0%, #fbbf24 55%, #fb923c 100%);
+      border-radius: 999px;
+      transition: width 0.4s cubic-bezier(0.22, 1, 0.36, 1);
+    }
+
+    .menu-stepper {
+      display: grid;
+      grid-template-columns: repeat(5, 1fr);
+      gap: 8px;
+      margin-top: 12px;
+    }
+
+    .step-btn {
+      min-height: 44px;
+      border: 1.5px solid rgba(255, 255, 255, 0.32);
+      background: rgba(255, 255, 255, 0.14);
+      color: #ffffff;
+      border-radius: 12px;
+      padding: 6px 10px;
+      font-family: var(--font-display);
+      font-size: 0.88rem;
+      font-weight: 700;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      text-align: center;
+      transition: transform 0.18s ease, background 0.2s ease, box-shadow 0.2s ease;
+    }
+
+    .step-btn:hover:not(:disabled):not(.active) {
+      background: rgba(255, 255, 255, 0.24);
+      transform: translateY(-1px);
+    }
+
+    .step-btn.active {
+      background: #ffffff;
+      color: #1e40af;
+      border-color: #fde047;
+      box-shadow: 0 5px 14px rgba(15, 23, 42, 0.18);
+      transform: translateY(-1px);
+    }
+
+    .step-btn.done:not(.active) {
+      background: rgba(45, 212, 191, 0.35);
+      border-color: #99f6e4;
+    }
+
+    .step-btn:disabled {
+      opacity: 0.48;
+      cursor: not-allowed;
+    }
+
+    .standalone-banner {
+      background: linear-gradient(90deg, #fef3c7, #ffedd5);
+      color: #7c2d12;
+      border-bottom: 2px solid #fbbf24;
+      padding: 10px 16px;
+      font-size: 0.92rem;
+      font-weight: 700;
+      text-align: center;
+    }
+
+    /* ==========================================================================
+       4. KONTAINER UTAMA, KARTU SOFT-ELEVATED, & TIPOGRAFI EYE-CATCHING
+       ========================================================================== */
+    .container {
+      width: 100%;
+      max-width: 1040px;
+      margin: 24px auto 40px;
+      padding: 0 16px;
+      flex: 1;
+    }
+
+    .menu-section {
+      display: none;
+      animation: fadeSlide 0.32s cubic-bezier(0.22, 1, 0.36, 1);
+    }
+
+    .menu-section.active {
+      display: block;
+    }
+
+    @keyframes fadeSlide {
+      from { opacity: 0; transform: translateY(10px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    .card {
+      background: var(--bg-surface);
+      border: 1.5px solid var(--border);
+      border-radius: var(--radius);
+      padding: 24px;
+      margin-bottom: 20px;
+      box-shadow: var(--shadow);
+      position: relative;
+    }
+
+    .card-accent-top-sky { border-top: 5px solid #38bdf8; }
+    .card-accent-top-teal { border-top: 5px solid #2dd4bf; }
+    .card-accent-top-amber { border-top: 5px solid #fbbf24; }
+    .card-accent-top-lavender { border-top: 5px solid #a78bfa; }
+
+    .card-hero {
+      background: linear-gradient(130deg, #1e40af 0%, #0284c7 46%, #0d9488 85%, #14b8a6 100%);
+      color: #ffffff;
+      border: none;
+      overflow: hidden;
+    }
+
+    .card-hero::before {
+      content: "";
+      position: absolute;
+      top: -50px;
+      right: -40px;
+      width: 220px;
+      height: 220px;
+      border-radius: 50%;
+      background: radial-gradient(circle, rgba(253, 224, 71, 0.26) 0%, transparent 70%);
+      pointer-events: none;
+    }
+
+    .card-hero h1,
+    .card-hero h2,
+    .card-hero p {
+      color: #ffffff;
+    }
+
+    .badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 5px 13px;
+      border-radius: 999px;
+      font-family: var(--font-display);
+      font-size: 0.83rem;
+      font-weight: 800;
+      letter-spacing: 0.01em;
+      background: var(--accent-soft);
+      color: var(--accent-dark);
+    }
+
+    .badge-sky { background: var(--sky-soft); color: var(--primary); }
+    .badge-teal { background: var(--secondary-soft); color: var(--secondary); }
+    .badge-lavender { background: var(--lavender-soft); color: var(--lavender); }
+    .badge-success { background: var(--success-soft); color: var(--success); }
+
+    h1, h2, h3, h4 {
+      font-family: var(--font-display);
+      color: var(--primary);
+      margin-top: 0;
+      line-height: 1.28;
+      letter-spacing: -0.015em;
+    }
+
+    h1 { font-size: clamp(1.55rem, 2.8vw, 2rem); font-weight: 800; }
+    h2 { font-size: clamp(1.32rem, 2.2vw, 1.56rem); font-weight: 800; }
+    h3 {
+      font-size: 1.18rem;
+      font-weight: 800;
+      display: flex;
+      align-items: center;
+      gap: 9px;
+    }
+
+    .sec-icon {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 32px;
+      height: 32px;
+      border-radius: 10px;
+      background: var(--sky-soft);
+      color: var(--sky);
+      font-size: 1rem;
+      flex-shrink: 0;
+    }
+
+    /* ==========================================================================
+       5. FORM INPUT, TOMBOL GRADASI SOFT, & STATUS PENGIRIMAN
+       ========================================================================== */
+    .form-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(230px, 1fr));
+      gap: 16px;
+    }
+
+    .field {
+      margin-bottom: 16px;
+    }
+
+    .field label {
+      display: block;
+      font-family: var(--font-display);
+      font-weight: 700;
+      font-size: 0.98rem;
+      margin-bottom: 7px;
+      color: var(--text-main);
+    }
+
+    .req-star {
+      color: var(--danger);
+      font-weight: 800;
+    }
+
+    input[type="text"],
+    input[type="password"],
+    input[type="number"],
+    textarea,
+    select {
+      width: 100%;
+      min-height: 48px;
+      padding: 11px 15px;
+      font-family: var(--font-body);
+      font-size: 1rem;
+      color: var(--text-main);
+      background: var(--bg-card-alt);
+      border: 1.5px solid var(--border);
+      border-radius: var(--radius-sm);
+      transition: border-color 0.2s ease, background 0.2s ease, box-shadow 0.2s ease;
+    }
+
+    textarea {
+      min-height: 96px;
+      resize: vertical;
+    }
+
+    input:focus,
+    textarea:focus,
+    select:focus {
+      border-color: var(--sky);
+      background: var(--bg-surface);
+      box-shadow: 0 0 0 3.5px rgba(56, 189, 248, 0.22);
+    }
+
+    .btn {
+      min-height: 48px;
+      min-width: 48px;
+      padding: 11px 22px;
+      border-radius: 14px;
+      border: 1.5px solid transparent;
+      font-family: var(--font-display);
+      font-size: 1rem;
+      font-weight: 800;
+      letter-spacing: 0.01em;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      transition: transform 0.16s ease, box-shadow 0.2s ease, opacity 0.2s ease;
+    }
+
+    .btn:hover:not(:disabled) {
+      transform: translateY(-2px);
+      box-shadow: 0 6px 16px rgba(2, 132, 199, 0.2);
+    }
+
+    .btn:active:not(:disabled) { transform: scale(0.98); }
+    .btn:disabled { opacity: 0.5; cursor: not-allowed; }
+
+    .btn-primary {
+      background: linear-gradient(135deg, #2563eb 0%, #0284c7 100%);
+      color: #ffffff;
+    }
+
+    .btn-secondary {
+      background: linear-gradient(135deg, #0d9488 0%, #14b8a6 100%);
+      color: #ffffff;
+    }
+
+    .btn-accent {
+      background: linear-gradient(135deg, #fbbf24 0%, #fb923c 100%);
+      color: #1e293b;
+    }
+
+    .btn-outline {
+      background: var(--bg-surface);
+      border-color: var(--border);
+      color: var(--text-main);
+    }
+
+    .btn-sm {
+      min-height: 44px;
+      padding: 8px 15px;
+      font-size: 0.92rem;
+      border-radius: 12px;
+    }
+
+    .nav-footer-bar {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: space-between;
+      align-items: center;
+      gap: 12px;
+      margin-top: 22px;
+      padding-top: 18px;
+      border-top: 1.5px dashed var(--border);
+    }
+
+    .sync-status {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 0.92rem;
+      font-weight: 700;
+      padding: 7px 14px;
+      border-radius: 12px;
+    }
+
+    .sync-sending { background: var(--accent-soft); color: var(--accent-dark); }
+    .sync-ok { background: var(--success-soft); color: var(--success); }
+    .sync-err { background: var(--danger-soft); color: var(--danger); }
+
+    /* ==========================================================================
+       6. KARTU TUJUAN WARNA-WARNI, MATERI, TABEL, & AKTIVITAS INTERAKTIF
+       ========================================================================== */
+    .goal-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+      gap: 14px;
+      margin-top: 14px;
+    }
+
+    .goal-card {
+      border-radius: 16px;
+      padding: 16px 18px;
+      border: 1.5px solid var(--border);
+      background: var(--bg-card-alt);
+      display: flex;
+      gap: 13px;
+      align-items: flex-start;
+      transition: transform 0.18s ease, box-shadow 0.18s ease;
+    }
+
+    .goal-card:hover {
+      transform: translateY(-2px);
+      box-shadow: var(--shadow);
+    }
+
+    .goal-badge-num {
+      min-width: 44px;
+      height: 36px;
+      padding: 0 10px;
+      border-radius: 11px;
+      font-family: var(--font-display);
+      font-weight: 800;
+      font-size: 0.88rem;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+    }
+
+    .story-box {
+      background: linear-gradient(135deg, var(--accent-soft) 0%, var(--coral-soft) 100%);
+      border-left: 5px solid var(--coral);
+      border-radius: 14px;
+      padding: 18px 20px;
+      margin-bottom: 18px;
+    }
+
+    .info-callout {
+      background: linear-gradient(135deg, var(--sky-soft) 0%, var(--secondary-soft) 100%);
+      border-left: 5px solid var(--sky);
+      border-radius: 14px;
+      padding: 16px 20px;
+      margin: 14px 0;
+    }
+
+    .rambu-box {
+      background: var(--success-soft);
+      border: 1.5px solid var(--success);
+      border-radius: 14px;
+      padding: 18px 20px;
+      margin-top: 16px;
+    }
+
+    .table-wrap {
+      width: 100%;
+      overflow-x: auto;
+      margin: 14px 0;
+      border-radius: 14px;
+      border: 1.5px solid var(--border);
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      min-width: 560px;
+    }
+
+    th, td {
+      padding: 12px 14px;
+      border-bottom: 1px solid var(--border);
+      text-align: left;
+      vertical-align: top;
+    }
+
+    th {
+      background: linear-gradient(90deg, var(--sky-soft), var(--secondary-soft));
+      color: var(--primary);
+      font-family: var(--font-display);
+      font-weight: 800;
+    }
+
+    tbody tr:nth-child(even) { background: var(--bg-card-alt); }
+
+    .activity-tabs {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+      gap: 12px;
+      margin-bottom: 6px;
+    }
+
+    .act-tab {
+      min-height: 54px;
+      padding: 12px 15px;
+      border-radius: 14px;
+      border: 2px solid var(--border);
+      background: var(--bg-card-alt);
+      color: var(--text-main);
+      font-family: var(--font-display);
+      font-weight: 800;
+      font-size: 0.96rem;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px;
+      text-align: left;
+      transition: transform 0.16s ease, border-color 0.2s ease, background 0.2s ease;
+    }
+
+    .act-tab:hover:not(:disabled) {
+      transform: translateY(-1px);
+      border-color: var(--sky);
+    }
+
+    .act-tab.active {
+      border-color: var(--sky);
+      background: linear-gradient(135deg, var(--sky-soft), var(--secondary-soft));
+      color: var(--primary);
+      box-shadow: 0 4px 12px rgba(2, 132, 199, 0.12);
+    }
+
+    .act-tab:disabled { opacity: 0.5; cursor: not-allowed; }
+
+    .match-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 16px;
+      margin-top: 14px;
+    }
+
+    @media (max-width: 680px) {
+      .match-grid { grid-template-columns: 1fr; }
+      .menu-stepper {
+        grid-template-columns: repeat(5, minmax(64px, 1fr));
+        overflow-x: auto;
+      }
+    }
+
+    .match-col {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+
+    .match-item {
+      min-height: 54px;
+      padding: 12px 15px;
+      border-radius: 14px;
+      border: 2px solid var(--border);
+      background: var(--bg-card-alt);
+      color: var(--text-main);
+      font-family: var(--font-body);
+      font-weight: 600;
+      text-align: left;
+      cursor: pointer;
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+      transition: transform 0.14s ease, border-color 0.18s ease, background 0.18s ease;
+    }
+
+    .match-item:hover { transform: translateY(-1px); border-color: var(--sky); }
+    .match-item.selected {
+      border-color: var(--accent);
+      background: var(--accent-soft);
+      box-shadow: 0 0 0 3px rgba(245, 158, 11, 0.22);
+    }
+    .match-item.paired { border-color: var(--sky); background: var(--sky-soft); }
+    .match-item.correct { border-color: var(--success); background: var(--success-soft); }
+    .match-item.wrong { border-color: var(--danger); background: var(--danger-soft); }
+
+    .seven-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(215px, 1fr));
+      gap: 13px;
+      margin: 16px 0;
+    }
+
+    .seven-card {
+      min-height: 100px;
+      padding: 15px;
+      border-radius: 16px;
+      border: 2px solid var(--border);
+      border-top-width: 5px;
+      background: var(--bg-card-alt);
+      color: var(--text-main);
+      text-align: left;
+      cursor: pointer;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      gap: 7px;
+      transition: transform 0.18s ease, box-shadow 0.18s ease, background 0.2s ease;
+    }
+
+    .seven-card:nth-child(1) { border-top-color: #38bdf8; }
+    .seven-card:nth-child(2) { border-top-color: #2dd4bf; }
+    .seven-card:nth-child(3) { border-top-color: #fbbf24; }
+    .seven-card:nth-child(4) { border-top-color: #fb923c; }
+    .seven-card:nth-child(5) { border-top-color: #a78bfa; }
+    .seven-card:nth-child(6) { border-top-color: #34d399; }
+    .seven-card:nth-child(7) { border-top-color: #60a5fa; }
+
+    .seven-card:hover { transform: translateY(-2px); box-shadow: var(--shadow); }
+    .seven-card.opened {
+      border-color: var(--secondary);
+      background: linear-gradient(145deg, var(--secondary-soft), var(--sky-soft));
+    }
+
+    .order-list {
+      display: flex;
+      flex-direction: column;
+      gap: 11px;
+      margin: 14px 0;
+    }
+
+    .order-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      padding: 12px 16px;
+      border-radius: 14px;
+      border: 2px solid var(--border);
+      background: var(--bg-card-alt);
+      transition: background 0.2s ease, border-color 0.2s ease;
+    }
+
+    .order-step-pill {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 30px;
+      height: 30px;
+      border-radius: 50%;
+      background: var(--sky-soft);
+      color: var(--primary);
+      font-family: var(--font-display);
+      font-weight: 800;
+      font-size: 0.9rem;
+      margin-right: 8px;
+    }
+
+    .order-row.correct { border-color: var(--success); background: var(--success-soft); }
+    .order-row.wrong { border-color: var(--danger); background: var(--danger-soft); }
+    .order-controls { display: flex; gap: 7px; }
+
+    .radio-pill-group {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+    }
+
+    .radio-pill {
+      min-height: 46px;
+      padding: 9px 16px;
+      border-radius: 13px;
+      border: 2px solid var(--border);
+      background: var(--bg-card-alt);
+      color: var(--text-main);
+      font-family: var(--font-display);
+      font-weight: 700;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      transition: transform 0.14s ease, border-color 0.18s ease, background 0.18s ease;
+    }
+
+    .radio-pill:hover { border-color: var(--sky); }
+    .radio-pill.active {
+      border-color: var(--sky);
+      background: linear-gradient(135deg, var(--sky-soft), var(--secondary-soft));
+      color: var(--primary);
+    }
+
+    .timer-bar {
+      background: linear-gradient(90deg, var(--bg-surface), var(--accent-soft));
+      border: 2px solid var(--accent);
+      border-radius: 14px;
+      padding: 12px 18px;
+      margin-bottom: 18px;
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: space-between;
+      align-items: center;
+      gap: 10px;
+      box-shadow: var(--shadow);
+    }
+
+    .mcq-card {
+      border: 1.5px solid var(--border);
+      border-radius: 16px;
+      padding: 18px;
+      margin-bottom: 16px;
+      background: var(--bg-card-alt);
+    }
+
+    .mcq-option {
+      width: 100%;
+      min-height: 48px;
+      padding: 11px 15px;
+      margin-top: 9px;
+      border-radius: 12px;
+      border: 1.5px solid var(--border);
+      background: var(--bg-surface);
+      color: var(--text-main);
+      font-family: var(--font-body);
+      font-size: 0.98rem;
+      text-align: left;
+      cursor: pointer;
+      display: flex;
+      align-items: flex-start;
+      gap: 11px;
+      transition: border-color 0.16s ease, background 0.16s ease, transform 0.12s ease;
+    }
+
+    .mcq-option:hover { border-color: var(--sky); transform: translateX(2px); }
+
+    .mcq-letter-badge {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 28px;
+      height: 28px;
+      border-radius: 8px;
+      background: var(--sky-soft);
+      color: var(--primary);
+      font-family: var(--font-display);
+      font-weight: 800;
+      font-size: 0.9rem;
+      flex-shrink: 0;
+    }
+
+    .mcq-option.selected { border-color: var(--sky); background: var(--sky-soft); font-weight: 700; }
+    .mcq-option.selected .mcq-letter-badge { background: var(--primary); color: #ffffff; }
+    .mcq-option.opt-correct { border-color: var(--success); background: var(--success-soft); }
+    .mcq-option.opt-wrong { border-color: var(--danger); background: var(--danger-soft); }
+
+    .app-footer {
+      background: var(--bg-surface);
+      border-top: 1.5px solid var(--border);
+      padding: 18px 16px;
+      margin-top: auto;
+    }
+
+    .footer-inner {
+      max-width: 1040px;
+      margin: 0 auto;
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: space-between;
+      align-items: center;
+      gap: 12px;
+      font-size: 0.94rem;
+    }
+
+    .conn-dot {
+      display: inline-block;
+      width: 11px;
+      height: 11px;
+      border-radius: 50%;
+      background: #94a3b8;
+    }
+
+    .conn-dot.ok { background: #16a34a; }
+    .conn-dot.err { background: #e11d48; }
+  </style>
+</head>
+<body>
+  <div id="sidebarBackdrop" class="sidebar-backdrop" onclick="toggleSidebar(false)"></div>
+
+  <div id="appShell" class="app-shell">
+    <!-- ======================================================================
+         SIDEBAR RAMPING: LOGIN SISWA, LOGIN GURU (PIN), TOMBOL TUTUP & LOGOUT
+         ====================================================================== -->
+    <aside id="appSidebar" class="sidebar" aria-label="Sidebar Portal Masuk">
+      <div>
+        <div class="sidebar-brand">
+          <div style="display:flex; align-items:center; gap:9px; min-width:0;">
+            <span class="brand-icon-wrap" style="background:linear-gradient(135deg,#2563eb,#0d9488); border:none;" aria-hidden="true">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
+                <rect x="2" y="4" width="20" height="16" rx="4" fill="#fde047"/>
+                <path d="M2 9.5h20M8.5 4v16" stroke="#1e40af" stroke-width="2.2"/>
+              </svg>
+            </span>
+            <div style="min-width:0;">
+              <div style="font-family:var(--font-display); font-weight:800; font-size:0.95rem; color:var(--primary); line-height:1.2;">Portal MPI</div>
+              <div style="font-size:0.78rem; color:var(--text-muted); font-weight:600;">MPLB • Kelas X</div>
+            </div>
+          </div>
+          <button type="button" class="sidebar-close-btn" onclick="toggleSidebar(false)" aria-label="Tutup sidebar" title="Tutup Sidebar">
+            ✕
+          </button>
+        </div>
+
+        <div class="sidebar-section-label">Pilih Akses Masuk</div>
+        <div class="sidebar-role-menu" role="tablist" aria-label="Pilih Login Siswa atau Login Guru">
+          <button type="button" id="roleBtnStudent" class="role-btn active" onclick="switchRole('student'); if (window.innerWidth <= 960) toggleSidebar(false);">
+            <span>👨‍🎓</span>
+            <span>Login Siswa</span>
+          </button>
+          <button type="button" id="roleBtnTeacher" class="role-btn" onclick="switchRole('teacher'); if (window.innerWidth <= 960) toggleSidebar(false);">
+            <span>👩‍🏫</span>
+            <span>Login Guru (PIN)</span>
+          </button>
+        </div>
+
+        <!-- Ringkasan Status & Logout Siswa di Sidebar -->
+        <div id="sidebarStudentArea">
+          <div class="sidebar-status-box">
+            <div style="font-weight:800; color:var(--primary); margin-bottom:5px;">📌 Identitas Siswa</div>
+            <div id="sideStudentInfo" style="color:var(--text-muted); line-height:1.45;">
+              Belum login sesi. Silakan isi Nama, Kelas, dan No. Absen di halaman utama.
+            </div>
+            <button type="button" class="btn btn-outline btn-sm" style="width:100%; margin-top:10px; min-height:44px; font-size:0.84rem;" onclick="goToMenu(1); if (window.innerWidth <= 960) toggleSidebar(false);">
+              🪪 Halaman Identitas
+            </button>
+            <div id="studentLogoutWrap" style="display:none; margin-top:8px;">
+              <button type="button" id="btnStudentLogoutSide" class="btn btn-outline btn-sm" style="width:100%; min-height:44px; font-size:0.84rem; color:var(--danger); border-color:var(--danger);" onclick="requestStudentLogout()">
+                🚪 Logout Sesi Siswa
+              </button>
+              <button type="button" id="btnStudentLogoutCancel" class="btn btn-outline btn-sm" style="display:none; width:100%; min-height:40px; font-size:0.82rem; margin-top:6px;" onclick="cancelStudentLogout()">
+                Batal Logout
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Form & Navigasi Login Guru di Sidebar -->
+        <div id="sidebarTeacherArea" style="display:none;">
+          <div id="sideTeacherLoginBox" class="sidebar-status-box">
+            <div style="font-weight:800; color:var(--accent-dark); margin-bottom:6px;">🔐 Login Guru Pakai PIN</div>
+            <div class="field" style="margin-bottom:10px;">
+              <label for="inputGuruPinSide" style="font-size:0.84rem;">Masukkan PIN Guru</label>
+              <input type="password" id="inputGuruPinSide" placeholder="PIN Guru..." style="min-height:44px; font-size:0.92rem;" />
+            </div>
+            <button type="button" id="btnGuruLoginSide" class="btn btn-accent btn-sm" style="width:100%;" onclick="loginTeacher()">
+              Masuk Guru →
+            </button>
+            <div id="guruLoginSideMsg" style="font-size:0.82rem; font-weight:700; margin-top:8px;"></div>
+          </div>
+
+          <div id="sideTeacherLoggedBox" style="display:none;">
+            <div class="sidebar-status-box" style="background:var(--accent-soft); border-color:var(--accent); margin-bottom:10px;">
+              <div style="font-weight:800; color:var(--accent-dark);">👩‍🏫 Mode Guru Aktif</div>
+              <div id="sideTeacherName" style="font-weight:700; margin-top:2px;">Nadya Dwi Sekar Arum</div>
+            </div>
+            <button type="button" class="side-nav-item" onclick="scrollToTeacherSection('teacherConnCard'); if (window.innerWidth <= 960) toggleSidebar(false);">
+              <span>🔗 Koneksi &amp; Link Siswa</span>
+            </button>
+            <button type="button" class="side-nav-item" onclick="scrollToTeacherSection('teacherRecapCard'); if (window.innerWidth <= 960) toggleSidebar(false);">
+              <span>📊 Rekap, Nilai &amp; Ekspor</span>
+            </button>
+            <button type="button" class="side-nav-item" style="color:var(--danger); border-color:var(--danger);" onclick="logoutTeacher(); if (window.innerWidth <= 960) toggleSidebar(false);">
+              <span>🚪 Logout Guru</span>
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <div style="padding-top:12px; border-top:1px solid var(--border); font-size:0.8rem; color:var(--text-muted);">
+        <div style="font-weight:700; color:var(--text-main);">Guru / Penyusun:</div>
+        <div>Nadya Dwi Sekar Arum</div>
+      </div>
+    </aside>
+
+    <!-- ======================================================================
+         AREA KONTEN UTAMA
+         ====================================================================== -->
+    <div class="main-wrap">
+      <!-- HEADER & BAR PROGRES -->
+      <header class="topbar">
+        <div class="topbar-inner">
+          <div class="topbar-row">
+            <div style="display:flex; align-items:center; gap:10px;">
+              <button type="button" id="btnToggleSidebar" class="mobile-drawer-btn" onclick="toggleSidebar()" aria-expanded="true" aria-label="Buka atau tutup sidebar">
+                ☰ Sidebar
+              </button>
+              <div class="brand-title">
+                <span class="brand-icon-wrap" aria-hidden="true">
+                  <svg width="22" height="22" viewBox="0 0 24 24" fill="none">
+                    <rect x="2" y="4" width="20" height="16" rx="4" fill="#fde047"/>
+                    <path d="M2 9.5h20M8.5 4v16" stroke="#1e40af" stroke-width="2.2"/>
+                  </svg>
+                </span>
+                <span>MPI Konsep Logistik — MPLB</span>
+              </div>
+            </div>
+            <div style="display:flex; align-items:center; gap:8px; flex-wrap:wrap;">
+              <div id="headerStudentBadge" class="student-pill">👋 Belum Masuk Sesi</div>
+              <button type="button" id="btnHeaderStudentLogout" class="mobile-drawer-btn" style="display:none; background:rgba(225,29,72,0.28); border-color:rgba(255,255,255,0.45);" onclick="requestStudentLogout()">
+                🚪 Logout
+              </button>
+            </div>
+          </div>
+
+          <div id="studentHeaderProgress">
+            <div class="progress-wrap" aria-label="Progres belajar">
+              <div class="progress-meta">
+                <span id="progressLabel">Progres Pembelajaran: 0%</span>
+                <span id="progressDetail">Menu 1 dari 5</span>
+              </div>
+              <div class="progress-track">
+                <div id="progressFill" class="progress-fill"></div>
+              </div>
+            </div>
+
+            <nav class="menu-stepper" aria-label="Menu Pembelajaran Berurutan">
+              <button type="button" class="step-btn active" id="navStep1" onclick="goToMenu(1)">1. Identitas</button>
+              <button type="button" class="step-btn" id="navStep2" onclick="goToMenu(2)" disabled>2. Tujuan</button>
+              <button type="button" class="step-btn" id="navStep3" onclick="goToMenu(3)" disabled>3. Materi</button>
+              <button type="button" class="step-btn" id="navStep4" onclick="goToMenu(4)" disabled>4. Evaluasi</button>
+              <button type="button" class="step-btn" id="navStep5" onclick="goToMenu(5)" disabled>5. Refleksi</button>
+            </nav>
+          </div>
+        </div>
+      </header>
+
+      <!-- Banner Mode Standalone (tampil jika dibuka di luar Apps Script dan URL belum diisi) -->
+      <div id="standaloneBanner" class="standalone-banner" style="display:none;">
+        <div style="max-width:1040px; margin:0 auto; display:flex; flex-wrap:wrap; align-items:center; justify-content:center; gap:10px;">
+          <span>⚠️ <strong>Mode Uji Lokal:</strong> Belum terhubung ke Google Sheets.</span>
+          <button type="button" class="btn btn-primary btn-sm" style="min-height:36px; padding:4px 12px; font-size:0.85rem;" onclick="toggleUrlConfigBox()">
+            🔗 Hubungkan URL Google Sheets
+          </button>
+        </div>
+        <div id="urlConfigBox" style="display:none; max-width:720px; margin:10px auto 2px; background:#ffffff; color:#1e293b; padding:12px; border-radius:12px; border:1.5px solid #f59e0b; text-align:left;">
+          <label for="inputScriptUrl" style="display:block; font-weight:800; font-size:0.9rem; margin-bottom:6px;">
+            Tempel URL Web App Google Apps Script (akhiran <code>/exec</code>):
+          </label>
+          <div style="display:flex; flex-wrap:wrap; gap:8px;">
+            <input type="text" id="inputScriptUrl" placeholder="https://script.google.com/macros/s/.../exec" style="flex:1; min-width:220px; min-height:42px; font-size:0.92rem;" />
+            <button type="button" class="btn btn-secondary btn-sm" style="min-height:42px;" onclick="saveCustomScriptUrl()">Simpan &amp; Hubungkan</button>
+          </div>
+          <div id="urlConfigFeedback" style="font-size:0.85rem; font-weight:700; margin-top:6px;"></div>
+        </div>
+      </div>
+
+      <!-- ====================================================================
+           KONTEN UTAMA (MENU 1–5 SISWA + PORTAL GURU)
+           ==================================================================== -->
+      <main class="container">
+        <!-- ==================================================================
+             MENU 1: IDENTITAS & LOGIN SISWA
+             ================================================================== -->
+        <section id="menu1" class="menu-section active" aria-labelledby="titleMenu1">
+          <div class="card card-hero">
+            <div style="display:flex; flex-wrap:wrap; align-items:center; justify-content:space-between; gap:18px;">
+              <div style="flex:1; min-width:260px;">
+                <span class="badge" style="background:rgba(255,255,255,0.22); color:#fde047; border:1px solid rgba(255,255,255,0.35); margin-bottom:10px;">
+                  ✨ SMK Kelas X • Fase E • Project-Based Learning
+                </span>
+                <h1 id="titleMenu1" style="margin-bottom:8px;">Multimedia Pembelajaran Interaktif</h1>
+                <p style="margin:0 0 6px; font-size:1.06rem; font-weight:700;">
+                  Mata Pelajaran: Dasar-dasar Manajemen Perkantoran dan Layanan Bisnis (MPLB)
+                </p>
+                <p style="margin:0 0 12px; opacity:0.95;">
+                  Materi: <strong>Konsep Logistik pada Bidang MPLB</strong> (3 Kegiatan, 6 Tahap PjBL)
+                </p>
+                <div style="font-size:0.93rem; opacity:0.95;">
+                  👩‍🏫 Penyusun / Guru: <strong id="heroGuru">Nadya Dwi Sekar Arum</strong>
+                  <span id="heroSekolahWrap" style="display:none;"> • 🏫 <strong id="heroSekolah"></strong></span>
+                </div>
+              </div>
+
+              <!-- Ilustrasi SVG Inline Gudang & Logistik -->
+              <div style="flex-shrink:0;" aria-hidden="true">
+                <svg width="176" height="132" viewBox="0 0 176 132" fill="none">
+                  <rect x="8" y="14" width="160" height="106" rx="18" fill="rgba(255,255,255,0.16)" stroke="rgba(255,255,255,0.35)" stroke-width="1.5"/>
+                  <path d="M26 52L88 26L150 52V104H26V52Z" fill="#dbeafe" stroke="#ffffff" stroke-width="2"/>
+                  <rect x="46" y="64" width="32" height="28" rx="4" fill="#fbbf24" stroke="#b45309" stroke-width="1.8"/>
+                  <rect x="84" y="56" width="38" height="36" rx="4" fill="#34d399" stroke="#047857" stroke-width="1.8"/>
+                  <path d="M56 64v10h12V64M97 56v12h12V56" stroke="#ffffff" stroke-width="2"/>
+                  <circle cx="136" cy="96" r="14" fill="#f97316"/>
+                  <path d="M130 96l4 4 8-8" stroke="#ffffff" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+                </svg>
+              </div>
+            </div>
+          </div>
+
+          <div class="card card-accent-top-sky">
+            <div style="display:flex; flex-wrap:wrap; justify-content:space-between; align-items:center; gap:10px; margin-bottom:8px;">
+              <h2 style="margin:0;">🪪 Identitas Sesi Belajar Siswa</h2>
+              <button type="button" class="btn btn-outline btn-sm" onclick="switchRole('teacher')">
+                👩‍🏫 Masuk sebagai Guru
+              </button>
+            </div>
+            <p style="color:var(--text-muted); margin-top:0;">
+              Isi identitas dirimu di bawah ini untuk memulai sesi belajar. Ini adalah identitas sesi (tanpa kata sandi) agar progres kegiatan, studi kasus, dan evaluasimu tercatat rapi.
+            </p>
+
+            <div id="loginGreetingBox" class="info-callout" style="display:none;"></div>
+
+            <div class="form-grid">
+              <div class="field">
+                <label for="inputNama">Nama Lengkap <span class="req-star">*</span></label>
+                <input type="text" id="inputNama" placeholder="Contoh: Rina Putri Maharani" autocomplete="name" />
+              </div>
+              <div class="field">
+                <label for="inputKelas">Kelas <span class="req-star">*</span></label>
+                <input type="text" id="inputKelas" placeholder="Contoh: X MPLB 1" />
+              </div>
+              <div class="field">
+                <label for="inputAbsen">No. Absen <span class="req-star">*</span></label>
+                <input type="text" id="inputAbsen" placeholder="Contoh: 14" />
+              </div>
+              <div class="field">
+                <label for="inputKelompok">Nama Kelompok (Opsional)</label>
+                <input type="text" id="inputKelompok" placeholder="Contoh: Kelompok 2 - Logistik Prima" />
+              </div>
+            </div>
+
+            <div style="display:flex; flex-wrap:wrap; align-items:center; gap:12px; margin-top:8px;">
+              <button type="button" id="btnStartLearn" class="btn btn-primary" disabled>
+                🚀 Mulai Belajar
+              </button>
+              <button type="button" id="btnRetryLogin" class="btn btn-outline btn-sm" style="display:none;">
+                Kirim Ulang
+              </button>
+              <span id="loginStatusText" class="sync-status" style="display:none;"></span>
+            </div>
+          </div>
+        </section>
+
+        <!-- ==================================================================
+             MENU 2: TUJUAN PEMBELAJARAN (CP & 5 INDIKATOR)
+             ================================================================== -->
+        <section id="menu2" class="menu-section" aria-labelledby="titleMenu2">
+          <div class="card card-accent-top-teal">
+            <span class="badge badge-teal">🎯 Langkah 2 • Peta Kompetensi</span>
+            <h2 id="titleMenu2" style="margin-top:10px;">Capaian &amp; Tujuan Pembelajaran</h2>
+
+            <div class="info-callout">
+              <strong>📘 Capaian Pembelajaran (Fase E):</strong><br />
+              Pada akhir Fase E, peserta didik mampu memahami konsep logistik, meliputi pengertian, fungsi, dan tujuan logistik; lima kegiatan pokok logistik; prinsip 7 tepat; serta dokumen pergudangan, sebagai dasar mendukung layanan bisnis dan logistik di perkantoran dengan teliti, bertanggung jawab, dan sesuai prosedur.
+            </div>
+
+            <p>
+              <strong>Mengapa Logistik Penting bagi Petugas Perkantoran?</strong><br />
+              Di kantor maupun sekolah, kelancaran kerja sangat bergantung pada ketersediaan perlengkapan seperti kertas, map, tinta, dan ATK. Dengan memahami konsep logistik, kamu mampu merencanakan kebutuhan barang secara tepat, menata persediaan di gudang dengan rapi, memastikan pengiriman sesuai pesanan, serta mencatat setiap arus barang melalui dokumen resmi yang dapat dipertanggungjawabkan.
+            </p>
+
+            <h3 style="margin-top:18px;"><span class="sec-icon" aria-hidden="true">🧭</span> Tujuan Pembelajaran 3.3 &amp; Indikator Ketercapaian</h3>
+            <div class="goal-grid">
+              <div class="goal-card">
+                <span class="goal-badge-num" style="background:var(--sky-soft); color:var(--primary);">3.3.1</span>
+                <div>
+                  <strong>Menjelaskan Pengertian &amp; Tujuan Logistik</strong><br />
+                  <span style="color:var(--text-muted); font-size:0.95rem;">Kamu akan mampu menjelaskan makna dan tujuan logistik menggunakan bahasamu sendiri secara tepat.</span>
+                </div>
+              </div>
+              <div class="goal-card">
+                <span class="goal-badge-num" style="background:var(--secondary-soft); color:var(--secondary);">3.3.2</span>
+                <div>
+                  <strong>Mengidentifikasi Lima Kegiatan Pokok Logistik</strong><br />
+                  <span style="color:var(--text-muted); font-size:0.95rem;">Kamu akan mengenali perencanaan, pengadaan, penyimpanan, distribusi, dan pengendalian beserta contohnya di kantor.</span>
+                </div>
+              </div>
+              <div class="goal-card">
+                <span class="goal-badge-num" style="background:var(--accent-soft); color:var(--accent-dark);">3.3.3</span>
+                <div>
+                  <strong>Menganalisis Prinsip 7 Tepat</strong><br />
+                  <span style="color:var(--text-muted); font-size:0.95rem;">Kamu akan menganalisis penerapan 7 tepat pada kegiatan pengiriman barang agar tidak terjadi kesalahan.</span>
+                </div>
+              </div>
+              <div class="goal-card">
+                <span class="goal-badge-num" style="background:var(--lavender-soft); color:var(--lavender);">3.3.4</span>
+                <div>
+                  <strong>Menjelaskan Pergudangan &amp; Dokumen Pergudangan</strong><br />
+                  <span style="color:var(--text-muted); font-size:0.95rem;">Kamu akan memahami fungsi surat jalan, Delivery Order (DO), invoice, packing list, dan laporan stok barang.</span>
+                </div>
+              </div>
+              <div class="goal-card">
+                <span class="goal-badge-num" style="background:var(--coral-soft); color:var(--coral);">3.3.5</span>
+                <div>
+                  <strong>Menyusun Alur Dokumen &amp; Simulasi Logistik</strong><br />
+                  <span style="color:var(--text-muted); font-size:0.95rem;">Kamu akan menyusun urutan dokumen saat barang keluar dari gudang serta merancang simulasi logistik bersama kelompok.</span>
+                </div>
+              </div>
+            </div>
+
+            <div class="nav-footer-bar">
+              <button type="button" class="btn btn-outline" onclick="goToMenu(1)">← Sebelumnya</button>
+              <button type="button" class="btn btn-primary" onclick="goToMenu(3)">Lanjut ke Materi (3 Kegiatan) →</button>
+            </div>
+          </div>
+        </section>
+
+        <!-- ==================================================================
+             MENU 3: MATERI (3 KEGIATAN BERURUTAN)
+             ================================================================== -->
+        <section id="menu3" class="menu-section" aria-labelledby="titleMenu3">
+          <div class="card card-accent-top-sky" style="padding-bottom:18px;">
+            <span class="badge badge-sky">📚 Langkah 3 • Eksplorasi &amp; Studi Kasus</span>
+            <h2 id="titleMenu3" style="margin-top:10px;">Materi Pembelajaran (3 Kegiatan)</h2>
+            <p style="color:var(--text-muted); margin-top:0;">
+              Selesaikan setiap kegiatan secara berurutan. Pastikan jawaban studi kasus dan refleksi kegiatan telah diisi sebelum menekan tombol selesai.
+            </p>
+
+            <div class="activity-tabs" role="tablist" aria-label="Pilih Kegiatan Belajar">
+              <button type="button" class="act-tab active" id="tabAct1" onclick="switchActivity(1)">
+                <span>1️⃣ Kegiatan 1: Logistik di Sekitarku</span>
+                <span id="badgeAct1" class="badge">Proses</span>
+              </button>
+              <button type="button" class="act-tab" id="tabAct2" onclick="switchActivity(2)" disabled>
+                <span>2️⃣ Kegiatan 2: Merencanakan Proyek</span>
+                <span id="badgeAct2" class="badge">Terkunci</span>
+              </button>
+              <button type="button" class="act-tab" id="tabAct3" onclick="switchActivity(3)" disabled>
+                <span>3️⃣ Kegiatan 3: Mewujudkan Proyek</span>
+                <span id="badgeAct3" class="badge">Terkunci</span>
+              </button>
+            </div>
+          </div>
+
+          <!-- ----------------------------------------------------------------
+               KEGIATAN 1: MEMAHAMI LOGISTIK DI SEKITARKU (3.3.1, 3.3.2)
+               ---------------------------------------------------------------- -->
+          <div id="activityPanel1" class="activity-panel">
+            <div class="card card-accent-top-amber">
+              <h3><span class="sec-icon" aria-hidden="true">🏫</span> Kegiatan 1: Memahami Logistik di Sekitarku (Indikator 3.3.1 &amp; 3.3.2)</h3>
+
+              <div class="story-box">
+                <strong>📖 Cerita Pembuka: Masalah di Ruang Tata Usaha "Rio"</strong>
+                <p style="margin:8px 0 0;">
+                  Rio adalah petugas piket di ruang tata usaha sekolah. Pada hari Senin, kertas HVS untuk menggandakan soal ujian ternyata habis. Tidak ada catatan sisa stok, dan tidak ada yang tahu kapan terakhir kali kertas dipesan. Rio bergegas membeli kertas ke toko ATK terdekat, tetapi jumlahnya kurang dan harganya lebih mahal. Sementara itu, di gudang sekolah, setumpuk map menumpuk tanpa tertata karena dahulu pernah dipesan terlalu banyak.
+                </p>
+              </div>
+
+              <div class="field">
+                <label for="pemantik1_1">Pertanyaan Pemantik 1 (Opsional): Pernahkah kamu melihat barang kebutuhan sekolah atau kantor yang habis atau menumpuk karena tidak dikelola dengan baik? Ceritakan satu contoh saja!</label>
+                <input type="text" id="pemantik1_1" placeholder="Tuliskan pengalaman atau pengamatan singkatmu..." />
+              </div>
+              <div class="field">
+                <label for="pemantik1_2">Pertanyaan Pemantik 2 (Opsional): Menurutmu, apa yang perlu dilakukan agar barang selalu tersedia tepat saat dibutuhkan?</label>
+                <input type="text" id="pemantik1_2" placeholder="Tuliskan pendapat singkatmu..." />
+              </div>
+            </div>
+
+            <div class="card card-accent-top-teal">
+              <h3><span class="sec-icon" aria-hidden="true">📦</span> Uraian Materi Pokok</h3>
+              <div class="info-callout">
+                <strong>Pengertian Logistik:</strong><br />
+                Logistik adalah kegiatan <strong>perencanaan, pengadaan, penyimpanan, dan distribusi barang</strong> agar sampai ke tempat tujuan dengan <strong>tepat waktu, tepat jumlah, dan tepat kualitas</strong>. Dalam arti luas, logistik mencakup pengelolaan aliran barang, informasi, dan sumber daya lain dari titik asal sampai ke titik konsumsi untuk memenuhi kebutuhan pelanggan.
+              </div>
+
+              <h4>Lima Kegiatan Pokok Logistik</h4>
+              <div class="table-wrap">
+                <table>
+                  <thead>
+                    <tr>
+                      <th style="width:6%;">No.</th>
+                      <th style="width:24%;">Kegiatan</th>
+                      <th style="width:40%;">Penjelasan</th>
+                      <th style="width:30%;">Contoh di Perkantoran</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr>
+                      <td><strong>1</strong></td>
+                      <td><strong>Perencanaan</strong><br /><em>(Planning)</em></td>
+                      <td>Menentukan kebutuhan barang, jumlah, waktu, dan anggaran pengadaan.</td>
+                      <td>Menyusun daftar kebutuhan kertas selama 3 bulan.</td>
+                    </tr>
+                    <tr>
+                      <td><strong>2</strong></td>
+                      <td><strong>Pengadaan</strong><br /><em>(Procurement)</em></td>
+                      <td>Pemesanan dan pembelian barang dari pemasok.</td>
+                      <td>Memesan kertas HVS ke toko ATK.</td>
+                    </tr>
+                    <tr>
+                      <td><strong>3</strong></td>
+                      <td><strong>Penyimpanan</strong><br /><em>(Warehousing)</em></td>
+                      <td>Menerima, menyimpan, merawat, dan mengelola stok di gudang sesuai prosedur.</td>
+                      <td>Menata ATK di gudang sesuai jenis.</td>
+                    </tr>
+                    <tr>
+                      <td><strong>4</strong></td>
+                      <td><strong>Distribusi</strong><br /><em>(Distribution)</em></td>
+                      <td>Menyalurkan barang dari gudang ke cabang, agen, atau pelanggan.</td>
+                      <td>Mengirim ATK ke tiap cabang.</td>
+                    </tr>
+                    <tr>
+                      <td><strong>5</strong></td>
+                      <td><strong>Pengendalian</strong><br /><em>(Controlling)</em></td>
+                      <td>Memantau stok, mencatat barang keluar-masuk, evaluasi agar tidak kekurangan/kelebihan.</td>
+                      <td>Mengecek kartu stok dan memesan ulang saat stok menipis.</td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+              <p style="margin-bottom:0;">
+                <strong>Catatan Penting:</strong> Kelima kegiatan saling berkaitan. Apabila perencanaan kurang tepat, barang yang dipesan dapat berlebih atau kurang. Tanpa pengendalian, stok yang menipis tidak diketahui sampai barang benar-benar habis.
+              </p>
+            </div>
+
+            <!-- Aktivitas Interaktif 1 -->
+            <div class="card card-accent-top-lavender">
+              <h3><span class="sec-icon" aria-hidden="true">🧩</span> Aktivitas Interaktif 1: Jodohkan Kegiatan Pokok &amp; Contohnya</h3>
+              <p style="color:var(--text-muted); margin-top:0;">
+                <strong>Cara bermain:</strong> Klik satu kartu <em>Kegiatan Pokok</em> di kolom kiri, lalu klik pasangan <em>Contoh Perkantoran</em> di kolom kanan (di laptop juga bisa seret-jatuhkan kartu kiri ke kanan).
+              </p>
+              <div id="match1Container" class="match-grid"></div>
+              <div style="display:flex; flex-wrap:wrap; gap:10px; margin-top:14px; align-items:center;">
+                <button type="button" class="btn btn-secondary btn-sm" onclick="checkMatch1()">✓ Periksa Pencocokan</button>
+                <button type="button" class="btn btn-outline btn-sm" onclick="resetMatch1()">↻ Ulangi</button>
+                <span id="match1Feedback" style="font-weight:700;"></span>
+              </div>
+            </div>
+
+            <!-- Studi Kasus 1: SMK Nusa Bangsa -->
+            <div class="card card-accent-top-sky">
+              <h3><span class="sec-icon" aria-hidden="true">📝</span> Studi Kasus Individu 1: Ruang Tata Usaha SMK "Nusa Bangsa"</h3>
+              <div class="story-box">
+                Bu Dewi, petugas tata usaha SMK Nusa Bangsa, sering kehabisan kertas HVS menjelang ujian karena tidak pernah menghitung kebutuhan kertas selama satu semester. Saat kertas habis, ia memesan dalam jumlah seadanya ke toko ATK terdekat. Kertas yang datang disimpan di lemari bercampur dengan map dan spidol sehingga sulit dicari. Ia juga tidak mencatat kertas yang dipakai tiap kelas, sehingga tidak pernah tahu sisa stok sampai kertas benar-benar habis.
+              </div>
+
+              <div class="field">
+                <label for="case1_q1">1. Tuliskan masalah yang dialami Bu Dewi! <span class="req-star">*</span></label>
+                <textarea id="case1_q1" placeholder="Tuliskan analisis masalah pada kasus Bu Dewi..."></textarea>
+              </div>
+              <div class="field">
+                <label for="case1_q2">2. Kegiatan pokok logistik apa saja yang belum dilakukan dengan baik oleh Bu Dewi? Sertakan alasannya! <span class="req-star">*</span></label>
+                <textarea id="case1_q2" placeholder="Sebutkan kegiatan pokok yang belum berjalan baik beserta alasannya..."></textarea>
+              </div>
+              <div class="field">
+                <label for="case1_q3">3. Tindakan apa yang sebaiknya dilakukan Bu Dewi agar kejadian serupa tidak terulang? Jelaskan! <span class="req-star">*</span></label>
+                <textarea id="case1_q3" placeholder="Tuliskan langkah perbaikan yang konkret..."></textarea>
+              </div>
+
+              <div id="rambuCase1" class="rambu-box" style="display:none;">
+                <strong>✓ Rambu-Rambu Jawaban Studi Kasus 1 (SMK Nusa Bangsa):</strong>
+                <ul style="margin:8px 0 6px; padding-left:20px;">
+                  <li><strong>(1) Masalah:</strong> Kertas habis menjelang ujian, kebutuhan tidak dihitung, barang tercampur, dan pemakaian tidak dicatat.</li>
+                  <li><strong>(2) Kegiatan yang belum baik:</strong> Perencanaan, pengadaan, penyimpanan, dan pengendalian.</li>
+                  <li><strong>(3) Perbaikan:</strong> Menyusun daftar kebutuhan per semester, memesan sesuai rencana, menata barang menurut jenis, memakai kartu stok, dan memesan ulang saat stok menipis.</li>
+                </ul>
+                <em>Catatan: Jawaban lain yang logis dapat diterima.</em>
+              </div>
+            </div>
+
+            <!-- Refleksi Kegiatan 1 -->
+            <div class="card">
+              <h3><span class="sec-icon" aria-hidden="true">🌱</span> Refleksi Kegiatan 1</h3>
+              <p style="color:var(--text-muted); margin-top:0;">Pilih kondisi yang paling sesuai dengan pemahamanmu pada Kegiatan 1:</p>
+              <div id="refList1"></div>
+
+              <div style="display:flex; flex-wrap:wrap; align-items:center; gap:12px; margin-top:18px;">
+                <button type="button" id="btnFinishAct1" class="btn btn-primary" disabled onclick="completeActivity(1)">
+                  ✓ Selesai Kegiatan 1 &amp; Simpan Progres
+                </button>
+                <span id="statusAct1" class="sync-status" style="display:none;"></span>
+                <button type="button" id="retryAct1" class="btn btn-outline btn-sm" style="display:none;" onclick="completeActivity(1)">Kirim Ulang</button>
+              </div>
+            </div>
+          </div>
+
+          <!-- ----------------------------------------------------------------
+               KEGIATAN 2: MERENCANAKAN PROYEK (3.3.3, 3.3.4)
+               ---------------------------------------------------------------- -->
+          <div id="activityPanel2" class="activity-panel" style="display:none;">
+            <div class="card card-accent-top-amber">
+              <h3><span class="sec-icon" aria-hidden="true">📋</span> Kegiatan 2: Merencanakan Proyek (Indikator 3.3.3 &amp; 3.3.4)</h3>
+              <div class="field">
+                <label for="pemantik2_1">Pertanyaan Pemantik 1 (Opsional): Pernahkah kamu menerima paket yang salah isi, terlambat, atau rusak? Apa yang kamu rasakan sebagai penerima?</label>
+                <input type="text" id="pemantik2_1" placeholder="Tuliskan pengalamanmu secara singkat..." />
+              </div>
+              <div class="field">
+                <label for="pemantik2_2">Pertanyaan Pemantik 2 (Opsional): Bagaimana cara membuktikan bahwa suatu barang benar-benar sudah dikirim dan diterima?</label>
+                <input type="text" id="pemantik2_2" placeholder="Tuliskan pendapatmu..." />
+              </div>
+            </div>
+
+            <div class="card card-accent-top-teal">
+              <h3><span class="sec-icon" aria-hidden="true">🎯</span> Prinsip 7 Tepat &amp; Dokumen Pergudangan</h3>
+              <p>Ketuk setiap kartu warna-warni prinsip <strong>7 Tepat (7 Right)</strong> di bawah ini untuk membuka penjelasannya:</p>
+              <div id="sevenCardsGrid" class="seven-grid"></div>
+
+              <div class="story-box">
+                <strong>⚠️ INGAT!</strong> Logistik dinyatakan berhasil bila <strong>ketujuh aspek terpenuhi bersama-sama</strong>, bukan hanya satu atau beberapa aspek.
+              </div>
+
+              <h4>Pergudangan dan Lima Dokumen Pergudangan</h4>
+              <p>
+                <strong>Pergudangan</strong> adalah pengelolaan barang di gudang, mulai dari penerimaan, penyimpanan, hingga pengeluaran barang; setiap kegiatan dicatat dalam dokumen resmi agar alur barang dapat ditelusuri dan dipertanggungjawabkan.
+              </p>
+
+              <div class="table-wrap">
+                <table>
+                  <thead>
+                    <tr>
+                      <th style="width:28%;">Nama Dokumen</th>
+                      <th>Fungsi Dokumen</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr>
+                      <td><strong>Surat jalan</strong></td>
+                      <td>Menyertai pengiriman sebagai bukti barang dikirim.</td>
+                    </tr>
+                    <tr>
+                      <td><strong>Delivery Order (DO)</strong></td>
+                      <td>Perintah pengeluaran barang dari gudang, diterbitkan bagian penjualan.</td>
+                    </tr>
+                    <tr>
+                      <td><strong>Invoice</strong></td>
+                      <td>Tagihan pembayaran atas barang/jasa yang dikirim kepada pembeli.</td>
+                    </tr>
+                    <tr>
+                      <td><strong>Packing list</strong></td>
+                      <td>Daftar rinci isi kemasan barang yang dikirim.</td>
+                    </tr>
+                    <tr>
+                      <td><strong>Laporan stok barang</strong></td>
+                      <td>Catatan barang masuk, keluar, dan sisa stok pada periode tertentu.</td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+
+            <!-- Aktivitas Interaktif 2B -->
+            <div class="card card-accent-top-lavender">
+              <h3><span class="sec-icon" aria-hidden="true">🧩</span> Aktivitas Interaktif 2: Jodohkan Dokumen Pergudangan &amp; Fungsinya</h3>
+              <p style="color:var(--text-muted); margin-top:0;">
+                Klik dokumen di kolom kiri lalu klik fungsi yang sesuai di kolom kanan (mendukung klik-pilih maupun seret-jatuhkan).
+              </p>
+              <div id="match2Container" class="match-grid"></div>
+              <div style="display:flex; flex-wrap:wrap; gap:10px; margin-top:14px; align-items:center;">
+                <button type="button" class="btn btn-secondary btn-sm" onclick="checkMatch2()">✓ Periksa Pencocokan</button>
+                <button type="button" class="btn btn-outline btn-sm" onclick="resetMatch2()">↻ Ulangi</button>
+                <span id="match2Feedback" style="font-weight:700;"></span>
+              </div>
+            </div>
+
+            <!-- Studi Kasus 2: CV Cahaya Mandiri -->
+            <div class="card card-accent-top-sky">
+              <h3><span class="sec-icon" aria-hidden="true">🚚</span> Studi Kasus Individu 2: Pengiriman Barang CV "Cahaya Mandiri"</h3>
+              <div class="story-box">
+                CV Cahaya Mandiri memesan <strong>50 rim kertas HVS putih</strong> dari seorang pemasok untuk <strong>gudang cabang Malang</strong>. Saat barang tiba, ditemukan 7 fakta permasalahan berikut. Pilihlah aspek 7 tepat yang tidak terpenuhi pada setiap fakta beserta alasan singkatnya!
+              </div>
+
+              <div class="table-wrap">
+                <table>
+                  <thead>
+                    <tr>
+                      <th style="width:6%;">No.</th>
+                      <th style="width:36%;">Fakta di Lapangan</th>
+                      <th style="width:26%;">Aspek 7 Tepat Tidak Terpenuhi <span class="req-star">*</span></th>
+                      <th style="width:32%;">Alasan Singkat <span class="req-star">*</span></th>
+                    </tr>
+                  </thead>
+                  <tbody id="cahayaTableBody"></tbody>
+                </table>
+              </div>
+
+              <div class="field" style="margin-top:14px;">
+                <label for="case2_q1">1. Apakah logistik CV Cahaya Mandiri dapat dikatakan berhasil? Jelaskan dengan mengacu pada prinsip 7 tepat! <span class="req-star">*</span></label>
+                <textarea id="case2_q1" placeholder="Jelaskan alasan keberhasilan/kegagalan berdasarkan prinsip 7 tepat..."></textarea>
+              </div>
+              <div class="field">
+                <label for="case2_q2">2. Dokumen pergudangan apa saja yang dapat membantu petugas gudang memeriksa kecocokan barang yang datang dengan pesanan? Jelaskan fungsi masing-masing dokumen tersebut! <span class="req-star">*</span></label>
+                <textarea id="case2_q2" placeholder="Sebutkan dokumen pergudangan yang relevan dan fungsinya..."></textarea>
+              </div>
+
+              <div id="rambuCase2" class="rambu-box" style="display:none;">
+                <strong>✓ Rambu-Rambu Jawaban Studi Kasus 2 (CV Cahaya Mandiri):</strong>
+                <ul style="margin:8px 0 6px; padding-left:20px;">
+                  <li><strong>Kunci Fakta 1–7:</strong> (1) Tepat barang, (2) Tepat jumlah, (3) Tepat waktu, (4) Tepat tempat, (5) Tepat kualitas, (6) Tepat harga, (7) Tepat informasi.</li>
+                  <li><strong>(1) Keberhasilan logistik:</strong> Tidak berhasil, karena ketujuh aspek 7 tepat harus terpenuhi bersama-sama.</li>
+                  <li><strong>(2) Dokumen pembantu:</strong> Packing list (daftar rinci isi kemasan), surat jalan (bukti pengiriman yang memuat nama &amp; jumlah barang), dan delivery order (perintah pengeluaran barang sesuai pesanan).</li>
+                </ul>
+                <em>Catatan: Jawaban lain yang logis dapat diterima.</em>
+              </div>
+            </div>
+
+            <!-- Refleksi Kegiatan 2 -->
+            <div class="card">
+              <h3><span class="sec-icon" aria-hidden="true">🌱</span> Refleksi Kegiatan 2</h3>
+              <div id="refList2"></div>
+
+              <div style="display:flex; flex-wrap:wrap; align-items:center; gap:12px; margin-top:18px;">
+                <button type="button" id="btnFinishAct2" class="btn btn-primary" disabled onclick="completeActivity(2)">
+                  ✓ Selesai Kegiatan 2 &amp; Simpan Progres
+                </button>
+                <span id="statusAct2" class="sync-status" style="display:none;"></span>
+                <button type="button" id="retryAct2" class="btn btn-outline btn-sm" style="display:none;" onclick="completeActivity(2)">Kirim Ulang</button>
+              </div>
+            </div>
+          </div>
+
+          <!-- ----------------------------------------------------------------
+               KEGIATAN 3: MEWUJUDKAN DAN MENGUJI PROYEK (3.3.5)
+               ---------------------------------------------------------------- -->
+          <div id="activityPanel3" class="activity-panel" style="display:none;">
+            <div class="card card-accent-top-amber">
+              <h3><span class="sec-icon" aria-hidden="true">🗂️</span> Kegiatan 3: Mewujudkan dan Menguji Proyek (Indikator 3.3.5)</h3>
+              <div class="field">
+                <label for="pemantik3_1">Pertanyaan Pemantik 1 (Opsional): Ketika membeli barang secara daring, dokumen atau bukti apa saja yang kamu terima?</label>
+                <input type="text" id="pemantik3_1" placeholder="Tuliskan contoh bukti transaksi/pengiriman..." />
+              </div>
+              <div class="field">
+                <label for="pemantik3_2">Pertanyaan Pemantik 2 (Opsional): Menurutmu, mengapa setiap barang yang keluar dari gudang perlu dicatat?</label>
+                <input type="text" id="pemantik3_2" placeholder="Tuliskan alasanmu..." />
+              </div>
+            </div>
+
+            <div class="card card-accent-top-teal">
+              <h3><span class="sec-icon" aria-hidden="true">🔄</span> Alur Dokumen Saat Barang Keluar dari Gudang</h3>
+              <p>Ketika barang keluar dari gudang, kelima dokumen pergudangan digunakan secara berurutan sebagai berikut:</p>
+
+              <!-- Diagram Alur SVG Inline -->
+              <div style="overflow-x:auto; padding:10px 0;">
+                <svg width="860" height="98" viewBox="0 0 860 98" role="img" aria-label="Diagram urutan 5 dokumen barang keluar gudang: 1 Delivery Order, 2 Packing list, 3 Surat jalan, 4 Invoice, 5 Laporan stok">
+                  <g font-family="system-ui, sans-serif" font-size="13" font-weight="800" text-anchor="middle">
+                    <rect x="4" y="14" width="146" height="68" rx="14" fill="#dbeafe" stroke="#3b82f6" stroke-width="2"/>
+                    <text x="77" y="42" fill="#1e40af">1. Delivery Order</text>
+                    <text x="77" y="62" fill="#334155" font-size="11.5" font-weight="600">Perintah keluar</text>
+
+                    <path d="M154 48h18M166 42l6 6-6 6" stroke="#0284c7" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+
+                    <rect x="176" y="14" width="146" height="68" rx="14" fill="#ccfbf1" stroke="#14b8a6" stroke-width="2"/>
+                    <text x="249" y="42" fill="#0f766e">2. Packing List</text>
+                    <text x="249" y="62" fill="#334155" font-size="11.5" font-weight="600">Cocokkan isi</text>
+
+                    <path d="M326 48h18M338 42l6 6-6 6" stroke="#0284c7" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+
+                    <rect x="348" y="14" width="146" height="68" rx="14" fill="#fef3c7" stroke="#f59e0b" stroke-width="2"/>
+                    <text x="421" y="42" fill="#b45309">3. Surat Jalan</text>
+                    <text x="421" y="62" fill="#334155" font-size="11.5" font-weight="600">Bukti kirim</text>
+
+                    <path d="M498 48h18M510 42l6 6-6 6" stroke="#0284c7" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+
+                    <rect x="520" y="14" width="146" height="68" rx="14" fill="#ede9fe" stroke="#8b5cf6" stroke-width="2"/>
+                    <text x="593" y="42" fill="#6d28d9">4. Invoice</text>
+                    <text x="593" y="62" fill="#334155" font-size="11.5" font-weight="600">Tagihan bayar</text>
+
+                    <path d="M670 48h18M682 42l6 6-6 6" stroke="#0284c7" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+
+                    <rect x="692" y="14" width="162" height="68" rx="14" fill="#ffedd5" stroke="#f97316" stroke-width="2"/>
+                    <text x="773" y="42" fill="#c2410c">5. Laporan Stok</text>
+                    <text x="773" y="62" fill="#334155" font-size="11.5" font-weight="600">Catat sisa stok</text>
+                  </g>
+                </svg>
+              </div>
+
+              <div class="info-callout">
+                <strong>Contoh Kasus (PT Maju Jaya):</strong><br />
+                PT Maju Jaya memesan 20 rim kertas HVS. Bagian penjualan menerbitkan <strong>DO</strong>, gudang menyiapkan 20 rim dan mencatatnya pada <strong>packing list</strong>, kurir membawa <strong>surat jalan</strong>, lalu <strong>invoice</strong> dikirim ke bagian keuangan pembeli, dan gudang memperbarui <strong>laporan stok</strong>. Barang tiba sesuai pesanan sehingga prinsip tepat barang, jumlah, kualitas, dan informasi terpenuhi.
+              </div>
+
+              <p style="margin-bottom:0;">
+                <strong>Catatan Pendukung Praktik Gudang:</strong> Terapkan prinsip <strong>5R</strong> (<em>Ringkas, Rapi, Resik, Rawat, Rajin</em>) serta aspek <strong>K3</strong> (Keselamatan dan Kesehatan Kerja: postur ergonomis, jalur aman, serta tidak mengangkat beban berat sendirian).
+              </p>
+            </div>
+
+            <!-- Aktivitas Interaktif 3 -->
+            <div class="card card-accent-top-lavender">
+              <h3><span class="sec-icon" aria-hidden="true">🔢</span> Aktivitas Interaktif 3: Urutkan 5 Dokumen Saat Barang Keluar Gudang</h3>
+              <p style="color:var(--text-muted); margin-top:0;">
+                Gunakan tombol <strong>Naik (▲)</strong> atau <strong>Turun (▼)</strong> untuk menyusun urutan dokumen dari langkah ke-1 hingga ke-5!
+              </p>
+              <div id="orderDocList" class="order-list"></div>
+              <div style="display:flex; flex-wrap:wrap; gap:10px; margin-top:12px; align-items:center;">
+                <button type="button" class="btn btn-secondary btn-sm" onclick="checkDocOrder()">✓ Periksa Urutan</button>
+                <button type="button" class="btn btn-outline btn-sm" onclick="resetDocOrder()">↻ Acak Ulang</button>
+                <span id="orderDocFeedback" style="font-weight:700;"></span>
+              </div>
+            </div>
+
+            <!-- Studi Kasus 3: Gudang Sentosa ATK -->
+            <div class="card card-accent-top-sky">
+              <h3><span class="sec-icon" aria-hidden="true">🏢</span> Studi Kasus Individu 3: Gudang "Sentosa ATK"</h3>
+              <div class="story-box">
+                Toko Bu Rina memesan 10 dus map dari Gudang Sentosa ATK. Petugas gudang langsung mengambil barang karena diminta secara lisan oleh bagian penjualan, tanpa perintah tertulis. Isi kemasan tidak dicocokkan dengan daftar apa pun, dan kurir mengantar barang tanpa dokumen. Beberapa hari kemudian, Bu Rina mengaku hanya menerima 9 dus, tetapi gudang tidak memiliki bukti jumlah yang dikirim. Selain itu, catatan stok tidak diperbarui sehingga stok di buku berbeda dengan stok di rak.
+              </div>
+
+              <div class="field">
+                <label for="case3_q1">1. Dokumen pergudangan apa saja yang belum digunakan oleh Gudang Sentosa ATK? Jelaskan akibat dari tidak adanya dokumen tersebut! <span class="req-star">*</span></label>
+                <textarea id="case3_q1" placeholder="Sebutkan dokumen yang terlewat dan dampaknya..."></textarea>
+              </div>
+              <div class="field">
+                <label for="case3_q2">2. Susunlah alur dokumen yang seharusnya dilakukan pada kasus tersebut, dari awal hingga akhir! <span class="req-star">*</span></label>
+                <textarea id="case3_q2" placeholder="Tuliskan urutan alur dokumen dari langkah 1 sampai 5..."></textarea>
+              </div>
+              <div class="field">
+                <label for="case3_q3">3. Aspek 7 tepat mana saja yang terancam tidak terpenuhi pada kasus tersebut? Jelaskan! <span class="req-star">*</span></label>
+                <textarea id="case3_q3" placeholder="Jelaskan aspek 7 tepat yang terancam tidak terpenuhi..."></textarea>
+              </div>
+
+              <div id="rambuCase3" class="rambu-box" style="display:none;">
+                <strong>✓ Rambu-Rambu Jawaban Studi Kasus 3 (Gudang Sentosa ATK):</strong>
+                <ul style="margin:8px 0 6px; padding-left:20px;">
+                  <li><strong>(1) Dokumen belum dipakai:</strong> DO, packing list, surat jalan, dan laporan stok (juga invoice bila relevan).</li>
+                  <li><strong>(2) Alur dokumen yang benar:</strong> DO → packing list → surat jalan → invoice → laporan stok.</li>
+                  <li><strong>(3) Aspek 7 tepat yang terancam:</strong> Tepat jumlah, tepat informasi (serta tepat barang/kualitas apabila kekeliruan tidak terdeteksi).</li>
+                </ul>
+                <em>Catatan: Jawaban lain yang logis dapat diterima.</em>
+              </div>
+            </div>
+
+            <!-- Panel Panduan Proyek Kelompok -->
+            <div class="card" style="border:2px dashed #38bdf8; background:linear-gradient(135deg, var(--sky-soft) 0%, var(--lavender-soft) 100%);">
+              <span class="badge badge-lavender">🤝 Informasi Proyek Kelompok (Di Luar Aplikasi)</span>
+              <h3 style="margin-top:10px;">Panduan Proyek Kelompok (6 Tahap PjBL)</h3>
+              <p style="margin-top:0;">
+                <strong>Produk Proyek:</strong> Rancangan simulasi alur logistik barang perkantoran yang terdiri atas:
+                (1) laporan rancangan, (2) satu set dokumen pergudangan (DO, packing list, surat jalan, invoice, laporan stok), dan (3) satu infografis alur dokumen.
+              </p>
+              <p>
+                <strong>6 Tahap PjBL:</strong> 1. Penentuan pertanyaan mendasar → 2. Perencanaan proyek → 3. Penyusunan jadwal → 4. Monitoring kemajuan proyek → 5. Pengujian hasil → 6. Evaluasi pengalaman.
+              </p>
+              <p>
+                <strong>Kerangka Laporan:</strong> Pendahuluan • BAB 2 Profil perusahaan simulasi • BAB 3 Rancangan lima kegiatan pokok logistik • BAB 4 Penerapan prinsip 7 tepat + pergudangan + alur dokumen • Penutup.
+              </p>
+              <p style="margin-bottom:0; font-weight:700; color:var(--primary);">
+                Catatan: Tugas proyek kelompok ini dikerjakan berkelompok (4–5 orang) di luar aplikasi sesuai arahan guru dan tidak dikumpulkan melalui aplikasi ini.
+              </p>
+            </div>
+
+            <!-- Refleksi Kegiatan 3 -->
+            <div class="card">
+              <h3><span class="sec-icon" aria-hidden="true">🌱</span> Refleksi Kegiatan 3</h3>
+              <div id="refList3"></div>
+
+              <div style="display:flex; flex-wrap:wrap; align-items:center; gap:12px; margin-top:18px;">
+                <button type="button" id="btnFinishAct3" class="btn btn-primary" disabled onclick="completeActivity(3)">
+                  ✓ Selesai Kegiatan 3 &amp; Simpan Progres
+                </button>
+                <span id="statusAct3" class="sync-status" style="display:none;"></span>
+                <button type="button" id="retryAct3" class="btn btn-outline btn-sm" style="display:none;" onclick="completeActivity(3)">Kirim Ulang</button>
+              </div>
+            </div>
+          </div>
+
+          <div class="card">
+            <div class="nav-footer-bar" style="margin-top:0; padding-top:0; border-top:none;">
+              <button type="button" class="btn btn-outline" onclick="goToMenu(2)">← Sebelumnya</button>
+              <button type="button" id="btnToEval" class="btn btn-primary" disabled onclick="goToMenu(4)">
+                Lanjut ke Evaluasi Akhir →
+              </button>
+            </div>
+          </div>
+        </section>
+
+        <!-- ==================================================================
+             MENU 4: EVALUASI AKHIR (20 PG + 5 URAIAN)
+             ================================================================== -->
+        <section id="menu4" class="menu-section" aria-labelledby="titleMenu4">
+          <div class="card card-accent-top-amber">
+            <span class="badge">🏅 Langkah 4 • Penilaian Individu</span>
+            <h2 id="titleMenu4" style="margin-top:10px;">Evaluasi Akhir Konsep Logistik</h2>
+            <p style="margin-top:0;">
+              Kerjakan <strong>20 soal Pilihan Ganda</strong> (skor maks 60) dan <strong>5 soal Uraian</strong> (skor maks 40, dinilai oleh guru) secara mandiri dan jujur.
+            </p>
+            <div id="attemptInfoBox" class="info-callout">Memuat informasi batas percobaan...</div>
+          </div>
+
+          <!-- Timer Pengingat Waktu 90 Menit -->
+          <div id="evalTimerBar" class="timer-bar" style="display:none;">
+            <div>
+              <strong>⏱️ Pengingat Waktu:</strong> <span id="timerDisplay" style="font-family:var(--font-display); font-weight:800; font-size:1.08rem;">90:00</span>
+            </div>
+            <div id="evalProgressCounter" style="font-family:var(--font-display); font-weight:800; color:var(--primary);">
+              Terjawab: 0/20 PG • 0/5 Uraian
+            </div>
+          </div>
+
+          <div id="timerExpiredBanner" class="story-box" style="display:none;">
+            <strong>⏰ Waktu 90 menit telah habis.</strong> Tenang, jawabanmu <strong>tidak dihapus</strong> dan tetap dapat diperiksa serta dikirimkan sekarang.
+          </div>
+
+          <div id="evalLoadBox" class="card">
+            <p id="evalLoadMsg">Memuat soal evaluasi dari server...</p>
+            <button type="button" id="btnReloadQuestions" class="btn btn-secondary btn-sm" style="display:none;" onclick="loadQuestionsFromServer()">
+              Muat Ulang Soal
+            </button>
+          </div>
+
+          <div id="evalFormContainer" style="display:none;">
+            <div class="card card-accent-top-sky">
+              <h3><span class="sec-icon" aria-hidden="true">🔘</span> A. Soal Pilihan Ganda (20 Butir)</h3>
+              <div id="mcqListContainer"></div>
+            </div>
+
+            <div class="card card-accent-top-teal">
+              <h3><span class="sec-icon" aria-hidden="true">✍️</span> B. Soal Uraian (5 Butir)</h3>
+              <div id="essayListContainer"></div>
+
+              <div style="display:flex; flex-wrap:wrap; align-items:center; gap:12px; margin-top:18px;">
+                <button type="button" id="btnSubmitEval" class="btn btn-primary" disabled onclick="submitEvaluasi()">
+                  📨 Kirim Jawaban Evaluasi
+                </button>
+                <span id="evalSyncStatus" class="sync-status" style="display:none;"></span>
+                <button type="button" id="btnRetryEval" class="btn btn-outline btn-sm" style="display:none;" onclick="submitEvaluasi()">
+                  Kirim Ulang
+                </button>
+              </div>
+            </div>
+          </div>
+
+          <div id="evalResultCard" class="card card-accent-top-teal" style="display:none;"></div>
+
+          <div class="card">
+            <div class="nav-footer-bar" style="margin-top:0; padding-top:0; border-top:none;">
+              <button type="button" class="btn btn-outline" onclick="goToMenu(3)">← Sebelumnya</button>
+              <button type="button" id="btnToRefleksi" class="btn btn-primary" disabled onclick="goToMenu(5)">
+                Lanjut ke Refleksi Akhir →
+              </button>
+            </div>
+          </div>
+        </section>
+
+        <!-- ==================================================================
+             MENU 5: REFLEKSI AKHIR PEMBELAJARAN
+             ================================================================== -->
+        <section id="menu5" class="menu-section" aria-labelledby="titleMenu5">
+          <div class="card card-accent-top-lavender">
+            <span class="badge badge-success">🌟 Langkah 5 • Penutup</span>
+            <h2 id="titleMenu5" style="margin-top:10px;">Refleksi Akhir Pembelajaran</h2>
+            <p style="color:var(--text-muted); margin-top:0;">
+              Sampaikan pengalaman belajarmu selama mempelajari materi Konsep Logistik pada Bidang MPLB.
+            </p>
+
+            <div class="field">
+              <label>1. Bagaimana perasaanmu setelah mengikuti pembelajaran ini? <span class="req-star">*</span></label>
+              <div class="radio-pill-group" id="groupPerasaan">
+                <button type="button" class="radio-pill" onclick="selectReflectOption('perasaan', 'Senang', this)">😊 Senang</button>
+                <button type="button" class="radio-pill" onclick="selectReflectOption('perasaan', 'Biasa saja', this)">😐 Biasa saja</button>
+                <button type="button" class="radio-pill" onclick="selectReflectOption('perasaan', 'Masih bingung', this)">🤔 Masih bingung</button>
+              </div>
+            </div>
+
+            <div class="field">
+              <label>2. Bagaimana tingkat pemahamanmu terhadap materi Konsep Logistik? <span class="req-star">*</span></label>
+              <div class="radio-pill-group" id="groupPemahaman">
+                <button type="button" class="radio-pill" onclick="selectReflectOption('pemahaman', 'Sangat paham', this)">🌟 Sangat paham</button>
+                <button type="button" class="radio-pill" onclick="selectReflectOption('pemahaman', 'Cukup paham', this)">👍 Cukup paham</button>
+                <button type="button" class="radio-pill" onclick="selectReflectOption('pemahaman', 'Perlu belajar lagi', this)">📘 Perlu belajar lagi</button>
+              </div>
+            </div>
+
+            <div class="field">
+              <label for="refMenarik">3. Hal paling menarik apa yang kamu temukan selama belajar materi ini?</label>
+              <textarea id="refMenarik" placeholder="Tuliskan bagian atau aktivitas yang paling menarik..."></textarea>
+            </div>
+
+            <div class="field">
+              <label for="refKesulitan">4. Bagian mana yang masih terasa sulit bagimu?</label>
+              <textarea id="refKesulitan" placeholder="Tuliskan bagian yang masih perlu pendalaman..."></textarea>
+            </div>
+
+            <div class="field">
+              <label for="refIngin">5. Hal apa yang ingin kamu pelajari lebih lanjut terkait logistik perkantoran?</label>
+              <textarea id="refIngin" placeholder="Tuliskan topik lanjutan yang membuatmu penasaran..."></textarea>
+            </div>
+
+            <div style="display:flex; flex-wrap:wrap; align-items:center; gap:12px; margin-top:16px;">
+              <button type="button" id="btnSubmitRefleksi" class="btn btn-primary" disabled onclick="submitRefleksi()">
+                ✨ Kirim Refleksi
+              </button>
+              <span id="refSyncStatus" class="sync-status" style="display:none;"></span>
+              <button type="button" id="btnRetryRefleksi" class="btn btn-outline btn-sm" style="display:none;" onclick="submitRefleksi()">
+                Kirim Ulang
+              </button>
+            </div>
+          </div>
+
+          <div id="finalSummaryCard" class="card card-hero" style="display:none;"></div>
+
+          <div class="card">
+            <div class="nav-footer-bar" style="margin-top:0; padding-top:0; border-top:none;">
+              <button type="button" class="btn btn-outline" onclick="goToMenu(4)">← Sebelumnya</button>
+              <span style="color:var(--text-muted); font-size:0.92rem; font-weight:600;">Terima kasih telah belajar dengan sungguh-sungguh! 🎓</span>
+            </div>
+          </div>
+        </section>
+
+        <!-- ==================================================================
+             PANEL PORTAL GURU (TAMPIL SAAT TAB "LOGIN GURU" DIPILIH DI SIDEBAR)
+             ================================================================== -->
+        <section id="teacherPortalSection" style="display:none;" aria-labelledby="titleTeacherPortal">
+          <div class="card card-hero">
+            <div style="display:flex; flex-wrap:wrap; justify-content:space-between; align-items:flex-start; gap:12px;">
+              <div>
+                <span class="badge" style="background:rgba(255,255,255,0.22); color:#fde047; border:1px solid rgba(255,255,255,0.35); margin-bottom:10px;">
+                  👩‍🏫 Portal Guru Pengampu • MPLB
+                </span>
+                <h1 id="titleTeacherPortal" style="margin-bottom:6px;">Dashboard Pengelolaan &amp; Penilaian Guru</h1>
+                <p style="margin:0; opacity:0.95;">
+                  Kelola koneksi Google Sheets untuk hosting Netlify, bagikan link otomatis ke siswa, nilai jawaban uraian, dan ekspor data/nilai ke Spreadsheet.
+                </p>
+              </div>
+              <button type="button" id="btnTeacherTopLogout" class="btn btn-outline btn-sm" style="display:none; background:rgba(255,255,255,0.18); color:#ffffff; border-color:rgba(255,255,255,0.45);" onclick="logoutTeacher()">
+                🚪 Logout Guru
+              </button>
+            </div>
+          </div>
+
+          <div id="teacherDashboardBody" style="display:none;">
+            <div id="teacherConnCard" class="card card-accent-top-sky">
+              <h3><span class="sec-icon" aria-hidden="true">🔗</span> 1. Koneksi Google Sheets &amp; Link Siswa (Untuk Netlify)</h3>
+              <p style="color:var(--text-muted); margin-top:4px;">
+                Tempelkan URL Web App Google Apps Script (<code>https://script.google.com/macros/s/.../exec</code>) di bawah ini agar aplikasi Netlify menyimpan seluruh data siswa ke Google Sheets.
+              </p>
+              <div class="field">
+                <label for="teacherScriptUrlInput">URL Web App Google Apps Script</label>
+                <div style="display:flex; flex-wrap:wrap; gap:10px;">
+                  <input type="text" id="teacherScriptUrlInput" placeholder="https://script.google.com/macros/s/.../exec" style="flex:1; min-width:240px;" />
+                  <button type="button" class="btn btn-primary" onclick="saveTeacherScriptUrl()">Simpan &amp; Uji Koneksi</button>
+                </div>
+              </div>
+              <div id="teacherConnFeedback" style="font-weight:700; margin-bottom:12px;"></div>
+
+              <div id="shareStudentLinkBox" class="info-callout" style="display:none;">
+                <strong>📲 Link Siap Bagikan ke Siswa (Otomatis Terhubung Google Sheets):</strong>
+                <p style="margin:6px 0 8px; font-size:0.92rem;">
+                  Bagikan tautan di bawah ini ke siswa. Saat siswa membuka link ini di HP/laptop mereka, aplikasi otomatis terhubung ke Google Sheets Anda tanpa perlu mengetik URL lagi:
+                </p>
+                <div style="display:flex; flex-wrap:wrap; gap:8px; align-items:center;">
+                  <input type="text" id="studentShareUrlOutput" readonly style="flex:1; min-width:220px; font-size:0.88rem; background:var(--bg-surface);" />
+                  <button type="button" class="btn btn-secondary btn-sm" onclick="copyStudentShareLink()">📋 Salin Link Siswa</button>
+                </div>
+                <div id="copyLinkStatus" style="font-size:0.86rem; font-weight:700; color:var(--success); margin-top:6px;"></div>
+              </div>
+            </div>
+
+            <div id="teacherRecapCard" class="card card-accent-top-teal">
+              <div style="display:flex; flex-wrap:wrap; justify-content:space-between; align-items:center; gap:10px; margin-bottom:12px;">
+                <h3 style="margin:0;"><span class="sec-icon" aria-hidden="true">📊</span> 2. Rekap Hasil Belajar, Nilai Uraian &amp; Ekspor Spreadsheet</h3>
+                <div style="display:flex; flex-wrap:wrap; gap:8px;">
+                  <button type="button" class="btn btn-secondary btn-sm" onclick="loadTeacherDashboard()">🔄 Muat Ulang Data Sheets</button>
+                  <button type="button" id="btnExportTeacherSpreadsheet" class="btn btn-accent btn-sm" onclick="exportTeacherSpreadsheetCsv()">📥 Ekspor Data &amp; Nilai (Excel/CSV)</button>
+                </div>
+              </div>
+              <div id="teacherExportFeedback" style="font-size:0.88rem; font-weight:700; margin-bottom:10px;"></div>
+
+              <div id="teacherSummaryGrid" class="form-grid" style="margin-bottom:16px;"></div>
+              <div id="teacherSubmissionsContainer">
+                <p style="color:var(--text-muted);">Klik <strong>Muat Ulang Data Sheets</strong> untuk menampilkan jawaban evaluasi siswa.</p>
+              </div>
+            </div>
+          </div>
+        </section>
+      </main>
+
+      <!-- ====================================================================
+           FOOTER & TOMBOL UJI KONEKSI
+           ==================================================================== -->
+      <footer class="app-footer">
+        <div class="footer-inner">
+          <div>
+            Dibuat oleh <strong id="footerGuru">Nadya Dwi Sekar Arum</strong>
+            <span id="footerSekolah"></span>
+          </div>
+          <div style="display:flex; flex-wrap:wrap; align-items:center; gap:10px;">
+            <button type="button" id="btnCsvExport" class="btn btn-outline btn-sm" style="display:none;" onclick="downloadSessionCsv()">
+              📥 Unduh Hasil (CSV)
+            </button>
+            <button type="button" class="btn btn-outline btn-sm" onclick="pingServer()">
+              <span id="connDot" class="conn-dot" aria-hidden="true"></span>
+              <span id="connLabel">Uji Koneksi</span>
+            </button>
+          </div>
+        </div>
+      </footer>
+    </div><!-- /.main-wrap -->
+  </div><!-- /.app-shell -->
+
+  <!-- ========================================================================
+       LOGIKA JAVASCRIPT KLIEN (State Tunggal, Transport Layer, & Interaksi)
+       ======================================================================== -->
+  <script>
+    (function () {
+      'use strict';
+
+      // ======================================================================
+      // 1. KONFIGURASI KLIEN (Disinkronkan dengan CONFIG di Code.gs)
+      // ======================================================================
+      const CONFIG_CLIENT = {
+        GURU: 'Nadya Dwi Sekar Arum',
+        SEKOLAH: '',
+        MAPEL: 'Dasar-dasar Manajemen Perkantoran dan Layanan Bisnis (MPLB)',
+        MATERI: 'Konsep Logistik pada Bidang MPLB',
+        MAX_ATTEMPT: 2,
+        KKM: 71,
+        DURASI_MENIT: 90,
+        GURU_PIN: 'GURU-MPLB-2026',
+        APPS_SCRIPT_URL: '', // Isi URL Web App (.../exec) jika dibuka di luar Apps Script (Netlify/standalone)
+        TOKEN: 'MPI-MPLB-LOGISTIK-2026'
+      };
+
+      // Daftar pertanyaan evaluasi publik (TANPA kunci jawaban/pembahasan) untuk cadangan mode uji lokal
+      const PUBLIC_QUESTIONS_FALLBACK = {
+        mcq: [
+          { no: 1, question: 'Pernyataan yang paling tepat tentang pengertian logistik adalah...', options: { a: 'Kegiatan menjual barang kepada pelanggan sebanyak-banyaknya dengan harga semurah mungkin.', b: 'Kegiatan perencanaan, pengadaan, penyimpanan, dan distribusi barang agar sampai ke tempat tujuan dengan tepat waktu, tepat jumlah, dan tepat kualitas.', c: 'Kegiatan mencatat keuangan perusahaan pada setiap akhir bulan.', d: 'Kegiatan mengiklankan barang melalui media sosial dan brosur.', e: 'Kegiatan menyimpan barang di gudang selama mungkin tanpa dikirim.' } },
+          { no: 2, question: 'Dalam arti luas, logistik tidak hanya mengelola aliran barang, tetapi juga...', options: { a: 'laba perusahaan dari titik penjualan sampai ke pemilik usaha', b: 'kegiatan promosi dari kantor pusat sampai ke kantor cabang', c: 'informasi dan sumber daya lain dari titik asal sampai ke titik konsumsi untuk memenuhi kebutuhan pelanggan', d: 'jumlah karyawan pada setiap bagian perkantoran', e: 'ruang kantor yang disewa dari pihak lain' } },
+          { no: 3, question: 'Kegiatan menentukan kebutuhan barang, jumlah, waktu, dan anggaran pengadaan termasuk kegiatan pokok logistik berupa...', options: { a: 'Pengadaan', b: 'Penyimpanan', c: 'Distribusi', d: 'Perencanaan', e: 'Pengendalian' } },
+          { no: 4, question: 'Petugas tata usaha memesan kertas HVS kepada toko ATK langganan sekolah. Kegiatan pokok logistik yang dilakukan petugas tersebut adalah...', options: { a: 'Pengadaan', b: 'Perencanaan', c: 'Penyimpanan', d: 'Distribusi', e: 'Pengendalian' } },
+          { no: 5, question: 'Petugas gudang menerima kiriman ATK, lalu menatanya di rak sesuai jenis barang. Kegiatan pokok logistik tersebut adalah...', options: { a: 'Perencanaan', b: 'Pengadaan', c: 'Distribusi', d: 'Pengendalian', e: 'Penyimpanan' } },
+          { no: 6, question: 'Bagian umum mengirim ATK dari gudang pusat ke setiap cabang perusahaan. Kegiatan tersebut termasuk...', options: { a: 'Perencanaan', b: 'Distribusi', c: 'Pengadaan', d: 'Penyimpanan', e: 'Pengendalian' } },
+          { no: 7, question: 'Petugas rutin mengecek kartu stok dan segera memesan ulang saat stok kertas menipis. Kegiatan pokok yang dilakukan petugas tersebut adalah...', options: { a: 'Perencanaan', b: 'Pengadaan', c: 'Pengendalian', d: 'Penyimpanan', e: 'Distribusi' } },
+          { no: 8, question: 'Tujuan logistik dirumuskan dalam prinsip...', options: { a: '7 tepat (7 right)', b: '5R (ringkas, rapi, resik, rawat, rajin)', c: 'K3 (keselamatan dan kesehatan kerja)', d: 'A3 (Attitude, Attention, Action)', e: 'Analisis SWOT' } },
+          { no: 9, question: 'Sekolah memesan 20 rim kertas HVS. Barang tiba sesuai jadwal dan dalam kondisi baik, tetapi hanya berjumlah 15 rim. Aspek 7 tepat yang belum terpenuhi adalah...', options: { a: 'Tepat barang', b: 'Tepat waktu', c: 'Tepat tempat', d: 'Tepat jumlah', e: 'Tepat kualitas' } },
+          { no: 10, question: 'Surat jalan yang menyertai kiriman mencantumkan nama dan jumlah barang yang tidak sesuai dengan barang yang dikirim, sehingga petugas gudang kesulitan memeriksa. Aspek 7 tepat yang belum terpenuhi adalah...', options: { a: 'Tepat harga', b: 'Tepat tempat', c: 'Tepat waktu', d: 'Tepat kualitas', e: 'Tepat informasi' } },
+          { no: 11, question: 'Karena kurir harus mengantar ulang barang, biaya pengiriman melebihi anggaran yang telah direncanakan. Aspek 7 tepat yang belum terpenuhi adalah...', options: { a: 'Tepat barang', b: 'Tepat harga', c: 'Tepat jumlah', d: 'Tepat tempat', e: 'Tepat informasi' } },
+          { no: 12, question: 'Pernyataan yang paling tepat mengenai keberhasilan logistik menurut prinsip 7 tepat adalah...', options: { a: 'Logistik berhasil asalkan satu aspek terpenuhi dengan sangat baik.', b: 'Logistik berhasil bila barang tiba tepat waktu meskipun jumlahnya kurang.', c: 'Logistik berhasil bila ketujuh aspek terpenuhi bersama-sama.', d: 'Logistik berhasil bila harga paling murah meskipun barang rusak.', e: 'Logistik berhasil bila dokumen lengkap meskipun barang salah alamat.' } },
+          { no: 13, question: 'Pergudangan adalah kegiatan...', options: { a: 'pengelolaan barang di gudang, mulai dari penerimaan, penyimpanan, hingga pengeluaran barang', b: 'pembelian barang dari pemasok dengan harga termurah', c: 'pengiriman barang dari gudang langsung ke tangan pelanggan', d: 'penagihan pembayaran atas barang yang telah dikirim', e: 'penyusunan anggaran pengadaan barang selama satu tahun' } },
+          { no: 14, question: 'Dokumen yang menyertai pengiriman barang sebagai bukti barang dikirim disebut...', options: { a: 'Invoice', b: 'Delivery order', c: 'Laporan stok barang', d: 'Surat jalan', e: 'Packing list' } },
+          { no: 15, question: 'Sebelum barang dikirim, petugas gudang mencocokkan isi kardus dengan daftar rinci isi kemasan. Dokumen tersebut adalah...', options: { a: 'Invoice', b: 'Surat jalan', c: 'Delivery order', d: 'Laporan stok barang', e: 'Packing list' } },
+          { no: 16, question: 'Bagian keuangan PT Maju Jaya menerima dokumen yang berisi tagihan pembayaran atas 20 rim kertas HVS yang dikirim. Dokumen tersebut adalah...', options: { a: 'Delivery order', b: 'Invoice', c: 'Surat jalan', d: 'Packing list', e: 'Laporan stok barang' } },
+          { no: 17, question: 'Dokumen yang mencatat jumlah barang masuk, barang keluar, dan sisa stok pada periode tertentu adalah...', options: { a: 'Surat jalan', b: 'Invoice', c: 'Laporan stok barang', d: 'Delivery order', e: 'Packing list' } },
+          { no: 18, question: 'Urutan dokumen saat barang keluar dari gudang yang benar adalah...', options: { a: 'Delivery order, packing list, surat jalan, invoice, laporan stok', b: 'Packing list, delivery order, surat jalan, invoice, laporan stok', c: 'Delivery order, surat jalan, packing list, laporan stok, invoice', d: 'Invoice, delivery order, packing list, surat jalan, laporan stok', e: 'Laporan stok, delivery order, packing list, surat jalan, invoice' } },
+          { no: 19, question: 'Sebelum petugas gudang mengeluarkan barang, bagian penjualan harus menerbitkan perintah pengeluaran barang. Dokumen tersebut adalah...', options: { a: 'Invoice', b: 'Laporan stok barang', c: 'Surat jalan', d: 'Delivery order (DO)', e: 'Packing list' } },
+          { no: 20, question: 'Petugas menata gudang dengan menyingkirkan barang yang tidak diperlukan, menata barang sesuai jenis, membersihkan rak, merawat kebersihan secara berkala, dan melakukannya dengan rajin. Prinsip yang diterapkan petugas tersebut adalah...', options: { a: 'Prinsip 7 tepat', b: 'Analisis SWOT', c: 'Prinsip A3', d: 'Dokumen pergudangan', e: '5R (ringkas, rapi, resik, rawat, rajin)' } }
+        ],
+        essay: [
+          { no: 'U1', question: 'Jelaskan pengertian logistik dengan bahasamu sendiri, lalu sebutkan dan jelaskan secara singkat lima kegiatan pokok logistik!' },
+          { no: 'U2', question: 'Sebutkan tujuh aspek dalam prinsip 7 tepat, lalu berikan satu contoh penerapan "tepat waktu" dalam pengiriman barang!' },
+          { no: 'U3', question: 'Sebutkan lima dokumen pergudangan beserta fungsi masing-masing dari lima dokumen pergudangan tersebut!' },
+          { no: 'U4', question: 'Toko "Maju Terus" memesan 10 dus map dari Gudang CV Mitra Kantor. Jelaskan alur dokumen yang harus dilalui sejak barang diminta keluar dari gudang hingga sisa stok tercatat, kemudian sebutkan aspek 7 tepat yang terbantu terpenuhi dengan adanya dokumen-dokumen tersebut!' },
+          { no: 'U5', question: 'Bayangkan kamu menjadi petugas logistik di sebuah perkantoran. Rancanglah penerapan lima kegiatan pokok logistik untuk satu jenis barang (misalnya kertas HVS) dengan menjelaskan: (a) perencanaan, (b) pengadaan, (c) penyimpanan, (d) distribusi, dan (e) pengendalian!' }
+        ]
+      };
+
+      // ======================================================================
+      // 2. DATA MATERI & STUDI KASUS (Sesuai LKPD Bagian C & G)
+      // ======================================================================
+      const MATCH1_ITEMS = [
+        { id: 'planning', label: '1. Perencanaan (Planning)', targetText: 'Menyusun daftar kebutuhan kertas selama 3 bulan' },
+        { id: 'procurement', label: '2. Pengadaan (Procurement)', targetText: 'Memesan kertas HVS ke toko ATK' },
+        { id: 'warehousing', label: '3. Penyimpanan (Warehousing)', targetText: 'Menata ATK di gudang sesuai jenis' },
+        { id: 'distribution', label: '4. Distribusi (Distribution)', targetText: 'Mengirim ATK ke tiap cabang' },
+        { id: 'controlling', label: '5. Pengendalian (Controlling)', targetText: 'Mengecek kartu stok dan memesan ulang saat stok menipis' }
+      ];
+
+      const SEVEN_RIGHTS = [
+        { key: 'Tepat barang', desc: 'Barang yang dikirim sesuai dengan jenis dan spesifikasi pesanan.' },
+        { key: 'Tepat jumlah', desc: 'Kuantitas barang yang dikirim sesuai dengan jumlah permintaan.' },
+        { key: 'Tepat waktu', desc: 'Barang tiba di lokasi tujuan sesuai jadwal yang telah disepakati.' },
+        { key: 'Tepat tempat', desc: 'Barang dikirimkan dan sampai ke alamat atau lokasi tujuan yang benar.' },
+        { key: 'Tepat kualitas', desc: 'Barang diterima dalam kondisi baik, utuh, dan tidak rusak.' },
+        { key: 'Tepat harga', desc: 'Biaya logistik efisien dan sesuai dengan anggaran yang direncanakan.' },
+        { key: 'Tepat informasi', desc: 'Data dan dokumen pengiriman tercatat secara lengkap dan akurat.' }
+      ];
+
+      const MATCH2_ITEMS = [
+        { id: 'surat_jalan', label: 'Surat jalan', targetText: 'Menyertai pengiriman sebagai bukti barang dikirim' },
+        { id: 'do', label: 'Delivery Order (DO)', targetText: 'Perintah pengeluaran barang dari gudang, diterbitkan bagian penjualan' },
+        { id: 'invoice', label: 'Invoice', targetText: 'Tagihan pembayaran atas barang/jasa yang dikirim kepada pembeli' },
+        { id: 'packing_list', label: 'Packing list', targetText: 'Daftar rinci isi kemasan barang yang dikirim' },
+        { id: 'laporan_stok', label: 'Laporan stok barang', targetText: 'Catatan barang masuk, keluar, dan sisa stok pada periode tertentu' }
+      ];
+
+      const CAHAYA_FACTS = [
+        { no: 1, text: 'Kertas yang datang adalah kertas berwarna, bukan kertas HVS putih seperti yang dipesan.', answer: 'Tepat barang' },
+        { no: 2, text: 'Jumlah yang diterima hanya 40 rim (padahal memesan 50 rim).', answer: 'Tepat jumlah' },
+        { no: 3, text: 'Barang tiba 3 hari lebih lambat dari jadwal yang disepakati.', answer: 'Tepat waktu' },
+        { no: 4, text: 'Barang diantar ke kantor pusat, bukan ke gudang cabang Malang.', answer: 'Tepat tempat' },
+        { no: 5, text: 'Sebagian kemasan basah dan kertas bergelombang karena kehujanan.', answer: 'Tepat kualitas' },
+        { no: 6, text: 'Biaya pengiriman melebihi anggaran karena kurir meminta tambahan biaya antar ulang.', answer: 'Tepat harga' },
+        { no: 7, text: 'Surat jalan tidak mencantumkan jumlah barang sehingga petugas gudang kesulitan memeriksa.', answer: 'Tepat informasi' }
+      ];
+
+      const DOC_ORDER_CORRECT = [
+        { id: 'DO', name: 'Delivery Order (DO)', desc: 'Bagian penjualan menerbitkan perintah pengeluaran barang dari gudang.' },
+        { id: 'PL', name: 'Packing list', desc: 'Petugas gudang menyiapkan barang dan mencocokkan isi kemasan.' },
+        { id: 'SJ', name: 'Surat jalan', desc: 'Barang dikirim bersama dokumen bukti pengiriman.' },
+        { id: 'INV', name: 'Invoice', desc: 'Penjual menagih pembayaran kepada pembeli.' },
+        { id: 'LS', name: 'Laporan stok barang', desc: 'Gudang mencatat barang keluar sehingga sisa stok diketahui.' }
+      ];
+
+      const REFLEKSI_KEGIATAN = {
+        1: [
+          'Saya dapat menjelaskan pengertian logistik dengan bahasa saya sendiri.',
+          'Saya dapat menyebutkan dan menjelaskan lima kegiatan pokok logistik beserta contohnya.',
+          'Saya aktif berpendapat dan mendengarkan dalam kelompok.',
+          'Saya sudah menemukan contoh nyata pengelolaan barang di sekitar saya.'
+        ],
+        2: [
+          'Saya dapat menyebutkan tujuh aspek prinsip 7 tepat beserta contohnya.',
+          'Saya dapat menjelaskan pengertian pergudangan.',
+          'Saya dapat menjelaskan fungsi lima dokumen pergudangan.',
+          'Saya dapat menyusun rencana proyek dan jadwal bersama kelompok.'
+        ],
+        3: [
+          'Saya mengerjakan tugas proyek sesuai jadwal dan tanggung jawab saya.',
+          'Saya dapat menyusun alur dokumen saat barang keluar dari gudang dengan benar.',
+          'Saya menerima masukan dengan terbuka dan ikut serta memperbaiki produk.',
+          'Saya dapat menyampaikan hasil proyek dengan jelas saat presentasi.'
+        ]
+      };
+
+      // ======================================================================
+      // 3. STATE TUNGGAL APLIKASI
+      // ======================================================================
+      const state = {
+        isAppsScriptEnv: (typeof google !== 'undefined' && google.script && google.script.run),
+        isStandaloneOffline: false,
+        activeRole: 'student',
+        teacherAuth: {
+          loggedIn: false,
+          pin: '',
+          lastFetchedData: null
+        },
+        studentLogoutConfirmPending: false,
+        currentMenu: 1,
+        currentActivity: 1,
+        sessionId: '',
+        startedAtMs: 0,
+        student: {
+          nama: '',
+          kelas: '',
+          absen: '',
+          kelompok: ''
+        },
+        loggedIn: false,
+        activitiesDone: { 1: false, 2: false, 3: false },
+        reflectionsAct: {
+          1: [null, null, null, null],
+          2: [null, null, null, null],
+          3: [null, null, null, null]
+        },
+        caseAnswersSaved: { 1: '', 2: '', 3: '' },
+        match1: { selectedLeft: null, pairs: {}, shuffledRight: [] },
+        match2: { selectedLeft: null, pairs: {}, shuffledRight: [] },
+        docOrderCurrent: [],
+        evalData: {
+          loaded: false,
+          mcq: [],
+          essay: [],
+          answersPg: new Array(20).fill(''),
+          answersUraian: new Array(5).fill(''),
+          attemptUsed: 0,
+          bestMcqScore: null,
+          submissions: [],
+          lastResult: null,
+          timerSeconds: CONFIG_CLIENT.DURASI_MENIT * 60,
+          timerInterval: null,
+          evalStartedMs: 0
+        },
+        finalReflection: {
+          perasaan: '',
+          pemahaman: '',
+          submitted: false
+        },
+        failedQueue: []
+      };
+
+      // ======================================================================
+      // 4. LAPISAN TRANSPORT TUNGGAL callServer(action, payload)
+      // ======================================================================
+      const ACTION_TO_GAS_FN = {
+        ping: 'apiPing',
+        getConfig: 'apiGetConfig',
+        getQuestions: 'apiGetQuestions',
+        start: 'apiStart',
+        progress: 'apiProgress',
+        evaluasi: 'apiEvaluasi',
+        refleksi: 'apiRefleksi',
+        guruLogin: 'apiGuruLogin',
+        guruGetData: 'apiGuruGetData',
+        guruSaveScore: 'apiGuruSaveScore'
+      };
+
+      function callServer(action, payload) {
+        const data = payload || {};
+        return new Promise(function (resolve) {
+          let settled = false;
+          const timer = setTimeout(function () {
+            if (!settled) {
+              settled = true;
+              resolve({ ok: false, error: 'Waktu tunggu habis (20 detik). Periksa koneksi internet lalu tekan Kirim Ulang.' });
+            }
+          }, 20000);
+
+          function done(res) {
+            if (settled) return;
+            settled = true;
+            clearTimeout(timer);
+            if (res && res.ok === true) {
+              resolve(res);
+            } else {
+              resolve({
+                ok: false,
+                offlineDemo: !!(res && res.offlineDemo),
+                error: (res && res.error) ? res.error : 'Server tidak memberikan konfirmasi berhasil.'
+              });
+            }
+          }
+
+          if (state.isAppsScriptEnv) {
+            const fnName = ACTION_TO_GAS_FN[action];
+            if (!fnName) {
+              done({ ok: false, error: 'Aksi tidak dikenal.' });
+              return;
+            }
+            try {
+              const runner = google.script.run
+                .withSuccessHandler(function (res) { done(res); })
+                .withFailureHandler(function (err) {
+                  done({ ok: false, error: err && err.message ? err.message : 'Gagal menghubungi server Apps Script.' });
+                });
+              if (action === 'ping' || action === 'getConfig' || action === 'getQuestions') {
+                runner[fnName]();
+              } else {
+                runner[fnName](data);
+              }
+            } catch (e) {
+              done({ ok: false, error: e.message });
+            }
+            return;
+          }
+
+          const url = String(CONFIG_CLIENT.APPS_SCRIPT_URL || '').trim();
+          if (!url) {
+            done({ ok: false, offlineDemo: true, error: 'APPS_SCRIPT_URL belum diisi pada mode standalone.' });
+            return;
+          }
+
+          const bodyObj = Object.assign({ action: action, token: CONFIG_CLIENT.TOKEN }, data);
+          fetch(url, {
+            method: 'POST',
+            headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+            body: JSON.stringify(bodyObj)
+          })
+            .then(function (resp) {
+              if (!resp.ok) throw new Error('HTTP ' + resp.status);
+              return resp.json();
+            })
+            .then(function (json) { done(json); })
+            .catch(function (err) {
+              done({ ok: false, error: 'Gagal terhubung ke Web App: ' + err.message });
+            });
+        });
+      }
+
+      function enqueueFailed(action, payload) {
+        state.failedQueue.push({ action: action, payload: payload, time: new Date().toISOString() });
+        try {
+          localStorage.setItem('mpi_mplb_failed_queue', JSON.stringify(state.failedQueue));
+        } catch (e) {}
+      }
+
+      // ======================================================================
+      // 5. UTILITAS UI, SANITASI TAMPILAN, & PROGRES
+      // ======================================================================
+      function escHtml(str) {
+        return String(str || '')
+          .replace(/&/g, '&amp;')
+          .replace(/</g, '&lt;')
+          .replace(/>/g, '&gt;')
+          .replace(/"/g, '&quot;');
+      }
+
+      function generateId(prefix) {
+        return prefix + '-' + Date.now().toString(36).toUpperCase() + '-' + Math.random().toString(36).substring(2, 6).toUpperCase();
+      }
+
+      function shuffleArray(arr) {
+        const copy = arr.slice();
+        for (let i = copy.length - 1; i > 0; i--) {
+          const j = Math.floor(Math.random() * (i + 1));
+          const tmp = copy[i];
+          copy[i] = copy[j];
+          copy[j] = tmp;
+        }
+        return copy;
+      }
+
+      function applyIdentityLabels() {
+        document.getElementById('heroGuru').textContent = CONFIG_CLIENT.GURU;
+        document.getElementById('footerGuru').textContent = CONFIG_CLIENT.GURU;
+        if (CONFIG_CLIENT.SEKOLAH && CONFIG_CLIENT.SEKOLAH.trim() !== '') {
+          document.getElementById('heroSekolah').textContent = CONFIG_CLIENT.SEKOLAH;
+          document.getElementById('heroSekolahWrap').style.display = 'inline';
+          document.getElementById('footerSekolah').textContent = ' • ' + CONFIG_CLIENT.SEKOLAH;
+        } else {
+          document.getElementById('heroSekolahWrap').style.display = 'none';
+          document.getElementById('footerSekolah').textContent = '';
+        }
+      }
+
+      function updateProgressUI() {
+        let points = 0;
+        if (state.loggedIn) points++;
+        if (state.activitiesDone[1]) points++;
+        if (state.activitiesDone[2]) points++;
+        if (state.activitiesDone[3]) points++;
+        if (state.evalData.submissions.length > 0) points++;
+        if (state.finalReflection.submitted) points++;
+
+        const pct = Math.round((points / 6) * 100);
+        document.getElementById('progressFill').style.width = pct + '%';
+        document.getElementById('progressLabel').textContent = 'Progres Pembelajaran: ' + pct + '%';
+        document.getElementById('progressDetail').textContent = 'Menu ' + state.currentMenu + ' dari 5';
+
+        document.getElementById('navStep2').disabled = !state.loggedIn;
+        document.getElementById('navStep3').disabled = !state.loggedIn;
+        const allActsDone = state.activitiesDone[1] && state.activitiesDone[2] && state.activitiesDone[3];
+        document.getElementById('navStep4').disabled = !allActsDone;
+        document.getElementById('btnToEval').disabled = !allActsDone;
+        document.getElementById('navStep5').disabled = !(state.evalData.submissions.length > 0);
+        document.getElementById('btnToRefleksi').disabled = !(state.evalData.submissions.length > 0);
+
+        for (let m = 1; m <= 5; m++) {
+          const btn = document.getElementById('navStep' + m);
+          btn.classList.toggle('active', state.currentMenu === m);
+        }
+        document.getElementById('navStep1').classList.toggle('done', state.loggedIn);
+        document.getElementById('navStep2').classList.toggle('done', state.loggedIn && state.currentMenu > 2);
+        document.getElementById('navStep3').classList.toggle('done', allActsDone);
+        document.getElementById('navStep4').classList.toggle('done', state.evalData.submissions.length > 0);
+        document.getElementById('navStep5').classList.toggle('done', state.finalReflection.submitted);
+      }
+
+      window.toggleSidebar = function (forceOpen) {
+        const shell = document.getElementById('appShell');
+        const sb = document.getElementById('appSidebar');
+        const bd = document.getElementById('sidebarBackdrop');
+        const toggleBtn = document.getElementById('btnToggleSidebar');
+        const isMobile = window.innerWidth <= 960;
+
+        if (isMobile) {
+          const willOpen = typeof forceOpen === 'boolean' ? forceOpen : !sb.classList.contains('open');
+          sb.classList.toggle('open', willOpen);
+          bd.classList.toggle('open', willOpen);
+          if (toggleBtn) toggleBtn.setAttribute('aria-expanded', willOpen ? 'true' : 'false');
+        } else {
+          const isCurrentlyCollapsed = shell.classList.contains('sidebar-collapsed');
+          const willOpen = typeof forceOpen === 'boolean' ? forceOpen : isCurrentlyCollapsed;
+          shell.classList.toggle('sidebar-collapsed', !willOpen);
+          sb.classList.remove('open');
+          bd.classList.remove('open');
+          if (toggleBtn) toggleBtn.setAttribute('aria-expanded', willOpen ? 'true' : 'false');
+        }
+      };
+
+      window.requestStudentLogout = function () {
+        if (!state.loggedIn) return;
+        const sideBtn = document.getElementById('btnStudentLogoutSide');
+        const cancelBtn = document.getElementById('btnStudentLogoutCancel');
+        const headBtn = document.getElementById('btnHeaderStudentLogout');
+
+        if (!state.studentLogoutConfirmPending) {
+          state.studentLogoutConfirmPending = true;
+          if (sideBtn) sideBtn.textContent = '⚠️ Yakin Logout? Klik Lagi';
+          if (cancelBtn) cancelBtn.style.display = 'block';
+          if (headBtn) headBtn.textContent = '⚠️ Yakin Logout?';
+          return;
+        }
+        performStudentLogout();
+      };
+
+      window.cancelStudentLogout = function () {
+        state.studentLogoutConfirmPending = false;
+        const sideBtn = document.getElementById('btnStudentLogoutSide');
+        const cancelBtn = document.getElementById('btnStudentLogoutCancel');
+        const headBtn = document.getElementById('btnHeaderStudentLogout');
+        if (sideBtn) sideBtn.textContent = '🚪 Logout Sesi Siswa';
+        if (cancelBtn) cancelBtn.style.display = 'none';
+        if (headBtn) headBtn.textContent = '🚪 Logout';
+      };
+
+      function performStudentLogout() {
+        if (state.evalData.timerInterval) {
+          clearInterval(state.evalData.timerInterval);
+          state.evalData.timerInterval = null;
+        }
+        state.studentLogoutConfirmPending = false;
+        state.loggedIn = false;
+        state.sessionId = '';
+        state.startedAtMs = 0;
+        state.student = { nama: '', kelas: '', absen: '', kelompok: '' };
+        state.activitiesDone = { 1: false, 2: false, 3: false };
+        state.reflectionsAct = {
+          1: [null, null, null, null],
+          2: [null, null, null, null],
+          3: [null, null, null, null]
+        };
+        state.caseAnswersSaved = { 1: '', 2: '', 3: '' };
+        state.evalData = {
+          loaded: false,
+          mcq: [],
+          essay: [],
+          answersPg: new Array(20).fill(''),
+          answersUraian: new Array(5).fill(''),
+          attemptUsed: 0,
+          bestMcqScore: null,
+          submissions: [],
+          lastResult: null,
+          timerSeconds: CONFIG_CLIENT.DURASI_MENIT * 60,
+          timerInterval: null,
+          evalStartedMs: 0
+        };
+        state.finalReflection = { perasaan: '', pemahaman: '', submitted: false };
+
+        // Reset input form identitas & tampilan
+        ['inputNama', 'inputKelas', 'inputAbsen', 'inputKelompok'].forEach(function (id) {
+          const el = document.getElementById(id);
+          if (el) el.value = '';
+        });
+        document.getElementById('btnStartLearn').disabled = true;
+        document.getElementById('loginGreetingBox').style.display = 'none';
+        document.getElementById('loginStatusText').style.display = 'none';
+        document.getElementById('headerStudentBadge').textContent = '👋 Belum Masuk Sesi';
+        document.getElementById('btnHeaderStudentLogout').style.display = 'none';
+        document.getElementById('studentLogoutWrap').style.display = 'none';
+        cancelStudentLogout();
+        document.getElementById('sideStudentInfo').textContent =
+          'Belum login sesi. Silakan isi Nama, Kelas, dan No. Absen di halaman utama.';
+
+        // Reset badge kegiatan 1-3 & form studi kasus
+        [1, 2, 3].forEach(function (n) {
+          const b = document.getElementById('badgeAct' + n);
+          const t = document.getElementById('tabAct' + n);
+          const r = document.getElementById('rambuCase' + n);
+          const st = document.getElementById('statusAct' + n);
+          if (b) {
+            b.className = 'badge';
+            b.textContent = n === 1 ? 'Proses' : 'Terkunci';
+          }
+          if (t) t.disabled = (n !== 1);
+          if (r) r.style.display = 'none';
+          if (st) st.style.display = 'none';
+        });
+        ['case1_q1', 'case1_q2', 'case1_q3', 'case2_q1', 'case2_q2', 'case3_q1', 'case3_q2', 'case3_q3', 'refMenarik', 'refKesulitan', 'refIngin'].forEach(function (id) {
+          const el = document.getElementById(id);
+          if (el) el.value = '';
+        });
+        document.getElementById('evalResultCard').style.display = 'none';
+        document.getElementById('evalFormContainer').style.display = 'none';
+        document.getElementById('evalTimerBar').style.display = 'none';
+        document.getElementById('finalSummaryCard').style.display = 'none';
+        renderActivityReflections();
+        resetMatch1();
+        resetMatch2();
+        resetDocOrder();
+        switchActivity(1);
+
+        state.currentMenu = 1;
+        for (let i = 1; i <= 5; i++) {
+          const el = document.getElementById('menu' + i);
+          el.classList.toggle('active', i === 1);
+          el.style.display = (i === 1) ? 'block' : 'none';
+        }
+        updateProgressUI();
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+      }
+
+      window.switchRole = function (role) {
+        state.activeRole = role;
+        const isTeacher = role === 'teacher';
+
+        document.getElementById('roleBtnStudent').className = 'role-btn' + (!isTeacher ? ' active' : '');
+        document.getElementById('roleBtnTeacher').className = 'role-btn' + (isTeacher ? ' teacher-active' : '');
+
+        document.getElementById('sidebarStudentArea').style.display = isTeacher ? 'none' : 'block';
+        document.getElementById('sidebarTeacherArea').style.display = isTeacher ? 'block' : 'none';
+        document.getElementById('studentHeaderProgress').style.display = isTeacher ? 'none' : 'block';
+
+        for (let i = 1; i <= 5; i++) {
+          document.getElementById('menu' + i).style.display = (!isTeacher && state.currentMenu === i) ? 'block' : 'none';
+        }
+        document.getElementById('teacherPortalSection').style.display = isTeacher ? 'block' : 'none';
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+      };
+
+      window.goToMenu = function (menuNum) {
+        if (state.activeRole !== 'student') {
+          switchRole('student');
+        }
+        if (menuNum > 1 && !state.loggedIn) return;
+        if (menuNum === 4 && !(state.activitiesDone[1] && state.activitiesDone[2] && state.activitiesDone[3])) return;
+        if (menuNum === 5 && state.evalData.submissions.length === 0) return;
+
+        state.currentMenu = menuNum;
+        for (let i = 1; i <= 5; i++) {
+          const el = document.getElementById('menu' + i);
+          el.classList.toggle('active', i === menuNum);
+          el.style.display = (i === menuNum) ? 'block' : 'none';
+        }
+        updateProgressUI();
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+
+        if (menuNum === 4) {
+          initEvaluationMenu();
+        }
+      };
+
+      // ======================================================================
+      // 6. MENU 1: IDENTITAS & MULAI BELAJAR
+      // ======================================================================
+      function setupLoginHandlers() {
+        const inpNama = document.getElementById('inputNama');
+        const inpKelas = document.getElementById('inputKelas');
+        const inpAbsen = document.getElementById('inputAbsen');
+        const btnStart = document.getElementById('btnStartLearn');
+        const btnRetry = document.getElementById('btnRetryLogin');
+
+        function validateLoginInputs() {
+          const valid = inpNama.value.trim().length > 0 &&
+                        inpKelas.value.trim().length > 0 &&
+                        inpAbsen.value.trim().length > 0;
+          btnStart.disabled = !valid;
+        }
+
+        [inpNama, inpKelas, inpAbsen].forEach(function (el) {
+          el.addEventListener('input', validateLoginInputs);
+        });
+
+        btnStart.addEventListener('click', handleStartSession);
+        btnRetry.addEventListener('click', handleStartSession);
+      }
+
+      function handleStartSession() {
+        const nama = document.getElementById('inputNama').value.trim();
+        const kelas = document.getElementById('inputKelas').value.trim();
+        const absen = document.getElementById('inputAbsen').value.trim();
+        const kelompok = document.getElementById('inputKelompok').value.trim();
+        if (!nama || !kelas || !absen) return;
+
+        if (!state.sessionId) {
+          state.sessionId = generateId('SESI');
+          state.startedAtMs = Date.now();
+        }
+        state.student = { nama: nama, kelas: kelas, absen: absen, kelompok: kelompok };
+
+        const btnStart = document.getElementById('btnStartLearn');
+        const btnRetry = document.getElementById('btnRetryLogin');
+        const statusEl = document.getElementById('loginStatusText');
+
+        btnStart.disabled = true;
+        btnRetry.style.display = 'none';
+        statusEl.style.display = 'inline-flex';
+        statusEl.className = 'sync-status sync-sending';
+        statusEl.textContent = 'Mengirim…';
+
+        const payload = {
+          sessionId: state.sessionId,
+          nama: nama,
+          kelas: kelas,
+          absen: absen,
+          kelompok: kelompok
+        };
+
+        callServer('start', payload).then(function (res) {
+          btnStart.disabled = false;
+
+          if (res.ok) {
+            state.loggedIn = true;
+            state.evalData.attemptUsed = Number(res.attemptUsed) || 0;
+            if (res.maxAttempt) CONFIG_CLIENT.MAX_ATTEMPT = Number(res.maxAttempt);
+
+            statusEl.className = 'sync-status sync-ok';
+            statusEl.textContent = '✓ Tersimpan';
+            finishLoginUI();
+            goToMenu(2);
+          } else if (res.offlineDemo) {
+            state.isStandaloneOffline = true;
+            state.loggedIn = true;
+            document.getElementById('standaloneBanner').style.display = 'block';
+            document.getElementById('btnCsvExport').style.display = 'inline-flex';
+            statusEl.className = 'sync-status sync-sending';
+            statusEl.textContent = 'Mode uji lokal aktif (belum terhubung ke Sheets)';
+            finishLoginUI();
+            goToMenu(2);
+          } else {
+            enqueueFailed('start', payload);
+            statusEl.className = 'sync-status sync-err';
+            statusEl.textContent = 'Gagal: ' + res.error;
+            btnRetry.style.display = 'inline-flex';
+          }
+        });
+      }
+
+      function finishLoginUI() {
+        const s = state.student;
+        document.getElementById('headerStudentBadge').textContent = '🎓 ' + s.nama + ' (' + s.kelas + ' • No. ' + s.absen + ')';
+        document.getElementById('btnHeaderStudentLogout').style.display = 'inline-flex';
+        document.getElementById('studentLogoutWrap').style.display = 'block';
+        cancelStudentLogout();
+        document.getElementById('sideStudentInfo').innerHTML =
+          '<strong>' + escHtml(s.nama) + '</strong><br />' +
+          'Kelas ' + escHtml(s.kelas) + ' • Absen ' + escHtml(s.absen) +
+          (s.kelompok ? '<br />Kelompok: ' + escHtml(s.kelompok) : '');
+        const greetBox = document.getElementById('loginGreetingBox');
+        greetBox.style.display = 'block';
+        greetBox.innerHTML = '👋 Halo, <strong>' + escHtml(s.nama) + '</strong> dari kelas <strong>' + escHtml(s.kelas) + '</strong> (No. Absen ' + escHtml(s.absen) + ')' +
+          (s.kelompok ? ' • Kelompok: <strong>' + escHtml(s.kelompok) + '</strong>' : '') +
+          '. Selamat belajar konsep logistik perkantoran!';
+        updateProgressUI();
+      }
+
+      // ======================================================================
+      // 7. MENU 3: KEGIATAN 1, 2, 3 (AKTIVITAS INTERAKTIF, KASUS, REFLEKSI)
+      // ======================================================================
+      window.switchActivity = function (actNo) {
+        if (actNo === 2 && !state.activitiesDone[1]) return;
+        if (actNo === 3 && !state.activitiesDone[2]) return;
+        state.currentActivity = actNo;
+
+        for (let i = 1; i <= 3; i++) {
+          document.getElementById('activityPanel' + i).style.display = (i === actNo) ? 'block' : 'none';
+          document.getElementById('tabAct' + i).classList.toggle('active', i === actNo);
+        }
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+      };
+
+      function renderMatchActivity(containerId, items, matchState, onRender) {
+        const container = document.getElementById(containerId);
+        let leftHtml = '<div class="match-col"><strong>1. Pilih Item di Kiri:</strong>';
+        items.forEach(function (item) {
+          const isSelected = matchState.selectedLeft === item.id;
+          const pairedRightId = matchState.pairs[item.id];
+          const pairedObj = pairedRightId ? items.find(function (x) { return x.id === pairedRightId; }) : null;
+          const cls = 'match-item' + (isSelected ? ' selected' : '') + (pairedObj ? ' paired' : '');
+          leftHtml += '<button type="button" class="' + cls + '" draggable="true" data-left="' + item.id + '">' +
+            '<span>' + escHtml(item.label) + '</span>' +
+            (pairedObj ? '<small style="color:var(--primary); font-weight:700;">↳ Dipasangkan: ' + escHtml(pairedObj.targetText) + '</small>' : '') +
+            '</button>';
+        });
+        leftHtml += '</div>';
+
+        let rightHtml = '<div class="match-col"><strong>2. Klik Pasangannya di Kanan:</strong>';
+        matchState.shuffledRight.forEach(function (item) {
+          const pairedLeftEntry = Object.keys(matchState.pairs).find(function (k) { return matchState.pairs[k] === item.id; });
+          const cls = 'match-item' + (pairedLeftEntry ? ' paired' : '');
+          rightHtml += '<button type="button" class="' + cls + '" data-right="' + item.id + '">' +
+            '<span>' + escHtml(item.targetText) + '</span>' +
+            '</button>';
+        });
+        rightHtml += '</div>';
+
+        container.innerHTML = leftHtml + rightHtml;
+
+        container.querySelectorAll('[data-left]').forEach(function (btn) {
+          btn.addEventListener('click', function () {
+            const id = btn.getAttribute('data-left');
+            matchState.selectedLeft = (matchState.selectedLeft === id) ? null : id;
+            onRender();
+          });
+          btn.addEventListener('dragstart', function (e) {
+            matchState.selectedLeft = btn.getAttribute('data-left');
+            if (e.dataTransfer) e.dataTransfer.setData('text/plain', matchState.selectedLeft);
+          });
+        });
+
+        container.querySelectorAll('[data-right]').forEach(function (btn) {
+          btn.addEventListener('click', function () {
+            const rightId = btn.getAttribute('data-right');
+            if (matchState.selectedLeft) {
+              Object.keys(matchState.pairs).forEach(function (k) {
+                if (matchState.pairs[k] === rightId) delete matchState.pairs[k];
+              });
+              matchState.pairs[matchState.selectedLeft] = rightId;
+              matchState.selectedLeft = null;
+              onRender();
+            }
+          });
+          btn.addEventListener('dragover', function (e) { e.preventDefault(); });
+          btn.addEventListener('drop', function (e) {
+            e.preventDefault();
+            const rightId = btn.getAttribute('data-right');
+            if (matchState.selectedLeft) {
+              Object.keys(matchState.pairs).forEach(function (k) {
+                if (matchState.pairs[k] === rightId) delete matchState.pairs[k];
+              });
+              matchState.pairs[matchState.selectedLeft] = rightId;
+              matchState.selectedLeft = null;
+              onRender();
+            }
+          });
+        });
+      }
+
+      function evaluateMatchActivity(containerId, items, matchState, feedbackId) {
+        const container = document.getElementById(containerId);
+        let correctCount = 0;
+        items.forEach(function (item) {
+          const chosen = matchState.pairs[item.id];
+          const isOk = (chosen === item.id);
+          if (isOk) correctCount++;
+          const leftBtn = container.querySelector('[data-left="' + item.id + '"]');
+          if (leftBtn) {
+            leftBtn.classList.remove('correct', 'wrong');
+            leftBtn.classList.add(isOk ? 'correct' : 'wrong');
+          }
+        });
+        const fb = document.getElementById(feedbackId);
+        fb.style.color = (correctCount === items.length) ? 'var(--success)' : 'var(--accent-dark)';
+        fb.textContent = 'Skor pencocokan: ' + correctCount + ' dari ' + items.length + ' tepat.' +
+          (correctCount === items.length ? ' Hebat, semua pasangan sudah benar!' : ' Silakan perbaiki yang masih bertanda merah.');
+      }
+
+      window.resetMatch1 = function () {
+        state.match1 = { selectedLeft: null, pairs: {}, shuffledRight: shuffleArray(MATCH1_ITEMS) };
+        document.getElementById('match1Feedback').textContent = '';
+        const rerender1 = function () {
+          renderMatchActivity('match1Container', MATCH1_ITEMS, state.match1, rerender1);
+        };
+        rerender1();
+      };
+      window.checkMatch1 = function () {
+        evaluateMatchActivity('match1Container', MATCH1_ITEMS, state.match1, 'match1Feedback');
+      };
+
+      window.resetMatch2 = function () {
+        state.match2 = { selectedLeft: null, pairs: {}, shuffledRight: shuffleArray(MATCH2_ITEMS) };
+        document.getElementById('match2Feedback').textContent = '';
+        const rerender2 = function () {
+          renderMatchActivity('match2Container', MATCH2_ITEMS, state.match2, rerender2);
+        };
+        rerender2();
+      };
+      window.checkMatch2 = function () {
+        evaluateMatchActivity('match2Container', MATCH2_ITEMS, state.match2, 'match2Feedback');
+      };
+
+      function renderSevenCards() {
+        const grid = document.getElementById('sevenCardsGrid');
+        grid.innerHTML = SEVEN_RIGHTS.map(function (item, idx) {
+          return '<button type="button" class="seven-card" onclick="toggleSevenCard(this)">' +
+            '<strong style="font-family:var(--font-display); font-size:1.02rem;">' + (idx + 1) + '. ' + escHtml(item.key) + '</strong>' +
+            '<span class="seven-desc" style="display:none; font-size:0.93rem;">' + escHtml(item.desc) + '</span>' +
+            '<small class="seven-hint" style="color:var(--primary); font-weight:700;">✨ Ketuk untuk membuka</small>' +
+            '</button>';
+        }).join('');
+      }
+
+      window.toggleSevenCard = function (btn) {
+        const opened = btn.classList.toggle('opened');
+        btn.querySelector('.seven-desc').style.display = opened ? 'block' : 'none';
+        btn.querySelector('.seven-hint').textContent = opened ? '✓ Terbuka' : '✨ Ketuk untuk membuka';
+      };
+
+      function renderCahayaTable() {
+        const tbody = document.getElementById('cahayaTableBody');
+        const optionsHtml = '<option value="">-- Pilih aspek 7 tepat --</option>' +
+          SEVEN_RIGHTS.map(function (s) {
+            return '<option value="' + escHtml(s.key) + '">' + escHtml(s.key) + '</option>';
+          }).join('');
+
+        tbody.innerHTML = CAHAYA_FACTS.map(function (f) {
+          return '<tr id="cahayaRow_' + f.no + '">' +
+            '<td><strong>' + f.no + '</strong></td>' +
+            '<td>' + escHtml(f.text) + '<div id="cahayaRowFb_' + f.no + '" style="font-size:0.86rem; font-weight:700; margin-top:4px;"></div></td>' +
+            '<td><label for="cahayaSel_' + f.no + '" class="sr-only">Aspek fakta ' + f.no + '</label>' +
+            '<select id="cahayaSel_' + f.no + '" onchange="validateActivityForm(2)">' + optionsHtml + '</select></td>' +
+            '<td><label for="cahayaReason_' + f.no + '" class="sr-only">Alasan fakta ' + f.no + '</label>' +
+            '<input type="text" id="cahayaReason_' + f.no + '" placeholder="Alasan singkat..." oninput="validateActivityForm(2)" /></td>' +
+            '</tr>';
+        }).join('');
+      }
+
+      window.resetDocOrder = function () {
+        state.docOrderCurrent = shuffleArray(DOC_ORDER_CORRECT);
+        document.getElementById('orderDocFeedback').textContent = '';
+        renderDocOrder();
+      };
+
+      function renderDocOrder() {
+        const list = document.getElementById('orderDocList');
+        list.innerHTML = state.docOrderCurrent.map(function (doc, idx) {
+          return '<div class="order-row" id="docRow_' + idx + '">' +
+            '<div><span class="order-step-pill">' + (idx + 1) + '</span><strong>' + escHtml(doc.name) + '</strong><br />' +
+            '<small style="color:var(--text-muted); margin-left:38px; display:inline-block;">' + escHtml(doc.desc) + '</small></div>' +
+            '<div class="order-controls">' +
+            '<button type="button" class="btn btn-outline btn-sm" aria-label="Geser naik ' + escHtml(doc.name) + '" ' + (idx === 0 ? 'disabled' : '') + ' onclick="moveDoc(' + idx + ', -1)">▲</button>' +
+            '<button type="button" class="btn btn-outline btn-sm" aria-label="Geser turun ' + escHtml(doc.name) + '" ' + (idx === state.docOrderCurrent.length - 1 ? 'disabled' : '') + ' onclick="moveDoc(' + idx + ', 1)">▼</button>' +
+            '</div></div>';
+        }).join('');
+      }
+
+      window.moveDoc = function (idx, dir) {
+        const target = idx + dir;
+        if (target < 0 || target >= state.docOrderCurrent.length) return;
+        const temp = state.docOrderCurrent[idx];
+        state.docOrderCurrent[idx] = state.docOrderCurrent[target];
+        state.docOrderCurrent[target] = temp;
+        document.getElementById('orderDocFeedback').textContent = '';
+        renderDocOrder();
+      };
+
+      window.checkDocOrder = function () {
+        let rightCount = 0;
+        state.docOrderCurrent.forEach(function (doc, idx) {
+          const isMatch = (doc.id === DOC_ORDER_CORRECT[idx].id);
+          if (isMatch) rightCount++;
+          const row = document.getElementById('docRow_' + idx);
+          if (row) {
+            row.classList.remove('correct', 'wrong');
+            row.classList.add(isMatch ? 'correct' : 'wrong');
+          }
+        });
+        const fb = document.getElementById('orderDocFeedback');
+        fb.style.color = (rightCount === 5) ? 'var(--success)' : 'var(--accent-dark)';
+        fb.textContent = rightCount === 5
+          ? '✓ Tepat sekali! Urutan alur dokumen: DO → Packing list → Surat jalan → Invoice → Laporan stok.'
+          : 'Posisi benar: ' + rightCount + ' dari 5. Sesuaikan kembali langkah yang bertanda merah.';
+      };
+
+      function renderActivityReflections() {
+        [1, 2, 3].forEach(function (actNo) {
+          const container = document.getElementById('refList' + actNo);
+          const items = REFLEKSI_KEGIATAN[actNo];
+          container.innerHTML = items.map(function (text, idx) {
+            return '<div style="padding:11px 0; border-bottom:1px solid var(--border); display:flex; flex-wrap:wrap; justify-content:space-between; align-items:center; gap:10px;">' +
+              '<span style="flex:1; min-width:220px;">' + (idx + 1) + '. ' + escHtml(text) + '</span>' +
+              '<div class="radio-pill-group">' +
+              '<button type="button" class="radio-pill btn-sm" id="refAct_' + actNo + '_' + idx + '_Sudah" onclick="setActRef(' + actNo + ',' + idx + ',\'Sudah\')">✓ Sudah</button>' +
+              '<button type="button" class="radio-pill btn-sm" id="refAct_' + actNo + '_' + idx + '_Belum" onclick="setActRef(' + actNo + ',' + idx + ',\'Belum\')">Belum</button>' +
+              '</div></div>';
+          }).join('');
+        });
+      }
+
+      window.setActRef = function (actNo, idx, val) {
+        state.reflectionsAct[actNo][idx] = val;
+        document.getElementById('refAct_' + actNo + '_' + idx + '_Sudah').classList.toggle('active', val === 'Sudah');
+        document.getElementById('refAct_' + actNo + '_' + idx + '_Belum').classList.toggle('active', val === 'Belum');
+        validateActivityForm(actNo);
+      };
+
+      window.validateActivityForm = function (actNo) {
+        const refComplete = state.reflectionsAct[actNo].every(function (v) { return v === 'Sudah' || v === 'Belum'; });
+        let caseComplete = false;
+
+        if (actNo === 1) {
+          caseComplete = document.getElementById('case1_q1').value.trim().length > 0 &&
+                         document.getElementById('case1_q2').value.trim().length > 0 &&
+                         document.getElementById('case1_q3').value.trim().length > 0;
+        } else if (actNo === 2) {
+          let allRowsFilled = true;
+          for (let i = 1; i <= 7; i++) {
+            if (!document.getElementById('cahayaSel_' + i).value || !document.getElementById('cahayaReason_' + i).value.trim()) {
+              allRowsFilled = false;
+              break;
+            }
+          }
+          caseComplete = allRowsFilled &&
+                         document.getElementById('case2_q1').value.trim().length > 0 &&
+                         document.getElementById('case2_q2').value.trim().length > 0;
+        } else if (actNo === 3) {
+          caseComplete = document.getElementById('case3_q1').value.trim().length > 0 &&
+                         document.getElementById('case3_q2').value.trim().length > 0 &&
+                         document.getElementById('case3_q3').value.trim().length > 0;
+        }
+
+        document.getElementById('btnFinishAct' + actNo).disabled = !(refComplete && caseComplete);
+      };
+
+      function buildCaseSummaryText(actNo) {
+        if (actNo === 1) {
+          return '[1] Masalah: ' + document.getElementById('case1_q1').value.trim() +
+            ' | [2] Kegiatan belum baik: ' + document.getElementById('case1_q2').value.trim() +
+            ' | [3] Perbaikan: ' + document.getElementById('case1_q3').value.trim();
+        }
+        if (actNo === 2) {
+          const rows = CAHAYA_FACTS.map(function (f) {
+            const chosen = document.getElementById('cahayaSel_' + f.no).value;
+            const reason = document.getElementById('cahayaReason_' + f.no).value.trim();
+            return 'F' + f.no + ':' + chosen + '(' + reason + ')';
+          }).join('; ');
+          return '[Tabel 7 Tepat] ' + rows +
+            ' | [1] Berhasil?: ' + document.getElementById('case2_q1').value.trim() +
+            ' | [2] Dokumen pembantu: ' + document.getElementById('case2_q2').value.trim();
+        }
+        return '[1] Dokumen belum dipakai: ' + document.getElementById('case3_q1').value.trim() +
+          ' | [2] Alur benar: ' + document.getElementById('case3_q2').value.trim() +
+          ' | [3] Aspek 7 tepat terancam: ' + document.getElementById('case3_q3').value.trim();
+      }
+
+      function revealCaseFeedback(actNo) {
+        document.getElementById('rambuCase' + actNo).style.display = 'block';
+        if (actNo === 2) {
+          CAHAYA_FACTS.forEach(function (f) {
+            const chosen = document.getElementById('cahayaSel_' + f.no).value;
+            const fbEl = document.getElementById('cahayaRowFb_' + f.no);
+            const isOk = (chosen === f.answer);
+            fbEl.style.color = isOk ? 'var(--success)' : 'var(--danger)';
+            fbEl.textContent = isOk
+              ? '✓ Tepat (' + f.answer + ')'
+              : '✗ Kurang tepat (Seharusnya: ' + f.answer + ')';
+          });
+        }
+      }
+
+      window.completeActivity = function (actNo) {
+        const titles = {
+          1: 'Kegiatan 1 - SMK Nusa Bangsa',
+          2: 'Kegiatan 2 - CV Cahaya Mandiri',
+          3: 'Kegiatan 3 - Gudang Sentosa ATK'
+        };
+        const caseAnswer = buildCaseSummaryText(actNo);
+        const sudahCount = state.reflectionsAct[actNo].filter(function (v) { return v === 'Sudah'; }).length;
+
+        const btn = document.getElementById('btnFinishAct' + actNo);
+        const statusEl = document.getElementById('statusAct' + actNo);
+        const retryBtn = document.getElementById('retryAct' + actNo);
+
+        btn.disabled = true;
+        retryBtn.style.display = 'none';
+        statusEl.style.display = 'inline-flex';
+        statusEl.className = 'sync-status sync-sending';
+        statusEl.textContent = 'Mengirim…';
+
+        const payload = {
+          sessionId: state.sessionId,
+          activityNo: actNo,
+          nama: state.student.nama,
+          kelas: state.student.kelas,
+          caseTitle: titles[actNo],
+          caseAnswer: caseAnswer,
+          reflectionSudahCount: sudahCount
+        };
+
+        callServer('progress', payload).then(function (res) {
+          btn.disabled = false;
+          if (res.ok || res.offlineDemo) {
+            state.activitiesDone[actNo] = true;
+            state.caseAnswersSaved[actNo] = caseAnswer;
+            revealCaseFeedback(actNo);
+
+            const badge = document.getElementById('badgeAct' + actNo);
+            badge.className = 'badge badge-success';
+            badge.textContent = '✓ Selesai';
+
+            if (actNo < 3) {
+              const nextTab = document.getElementById('tabAct' + (actNo + 1));
+              const nextBadge = document.getElementById('badgeAct' + (actNo + 1));
+              nextTab.disabled = false;
+              nextBadge.textContent = 'Terbuka';
+            }
+
+            statusEl.className = res.ok ? 'sync-status sync-ok' : 'sync-status sync-sending';
+            statusEl.textContent = res.ok
+              ? '✓ Tersimpan! Rambu-rambu jawaban telah dibuka di atas.'
+              : 'Tersimpan lokal (mode uji). Rambu-rambu jawaban telah dibuka.';
+            updateProgressUI();
+          } else {
+            enqueueFailed('progress', payload);
+            statusEl.className = 'sync-status sync-err';
+            statusEl.textContent = 'Gagal menyimpan: ' + res.error;
+            retryBtn.style.display = 'inline-flex';
+          }
+        });
+      };
+
+      // ======================================================================
+      // 8. MENU 4: EVALUASI AKHIR (20 PG + 5 URAIAN, TIMER, & REVIEW)
+      // ======================================================================
+      function initEvaluationMenu() {
+        updateAttemptBanner();
+        if (!state.evalData.loaded) {
+          loadQuestionsFromServer();
+        }
+      }
+
+      function updateAttemptBanner() {
+        const used = state.evalData.attemptUsed;
+        const max = CONFIG_CLIENT.MAX_ATTEMPT;
+        const sisa = Math.max(0, max - used);
+        const box = document.getElementById('attemptInfoBox');
+
+        if (sisa <= 0) {
+          box.innerHTML = '<strong>Batas Percobaan Tercapai:</strong> Kamu telah menggunakan seluruh <strong>' + max + ' kali</strong> kesempatan evaluasi akhir.';
+          document.getElementById('evalFormContainer').style.display = 'none';
+          document.getElementById('evalTimerBar').style.display = 'none';
+        } else {
+          box.innerHTML = '<strong>Kesempatan Pengerjaan:</strong> Percobaan ke-<strong>' + (used + 1) + '</strong> dari <strong>' + max + '</strong> (sisa ' + sisa + ' kesempatan). Pastikan seluruh 20 PG dan 5 uraian terisi sebelum mengirim.';
+        }
+      }
+
+      window.loadQuestionsFromServer = function () {
+        if (state.evalData.attemptUsed >= CONFIG_CLIENT.MAX_ATTEMPT) {
+          document.getElementById('evalLoadBox').style.display = 'none';
+          return;
+        }
+
+        const loadBox = document.getElementById('evalLoadBox');
+        const loadMsg = document.getElementById('evalLoadMsg');
+        const reloadBtn = document.getElementById('btnReloadQuestions');
+        loadBox.style.display = 'block';
+        reloadBtn.style.display = 'none';
+        loadMsg.style.color = 'var(--text-main)';
+        loadMsg.textContent = 'Memuat soal evaluasi dari server...';
+
+        callServer('getQuestions', {}).then(function (res) {
+          if (res.ok && Array.isArray(res.mcq) && Array.isArray(res.essay)) {
+            if (res.config) {
+              if (res.config.maxAttempt) CONFIG_CLIENT.MAX_ATTEMPT = Number(res.config.maxAttempt);
+              if (res.config.durasiMenit) CONFIG_CLIENT.DURASI_MENIT = Number(res.config.durasiMenit);
+              if (res.config.kkm) CONFIG_CLIENT.KKM = Number(res.config.kkm);
+            }
+            state.evalData.loaded = true;
+            state.evalData.mcq = res.mcq;
+            state.evalData.essay = res.essay;
+            loadBox.style.display = 'none';
+            renderEvaluationQuestions();
+            updateAttemptBanner();
+            startEvaluationTimer();
+          } else if (res.offlineDemo) {
+            state.evalData.loaded = true;
+            state.evalData.mcq = PUBLIC_QUESTIONS_FALLBACK.mcq;
+            state.evalData.essay = PUBLIC_QUESTIONS_FALLBACK.essay;
+            loadBox.style.display = 'none';
+            renderEvaluationQuestions();
+            updateAttemptBanner();
+            startEvaluationTimer();
+          } else {
+            loadMsg.style.color = 'var(--danger)';
+            loadMsg.textContent = 'Soal evaluasi gagal dimuat dari server: ' + (res.error || 'Terjadi gangguan koneksi.');
+            reloadBtn.style.display = 'inline-flex';
+          }
+        });
+      };
+
+      function startEvaluationTimer() {
+        if (state.evalData.timerInterval) return;
+        state.evalData.evalStartedMs = Date.now();
+        state.evalData.timerSeconds = CONFIG_CLIENT.DURASI_MENIT * 60;
+        document.getElementById('evalTimerBar').style.display = 'flex';
+
+        state.evalData.timerInterval = setInterval(function () {
+          if (state.evalData.timerSeconds > 0) {
+            state.evalData.timerSeconds--;
+            const mins = Math.floor(state.evalData.timerSeconds / 60);
+            const secs = state.evalData.timerSeconds % 60;
+            document.getElementById('timerDisplay').textContent =
+              String(mins).padStart(2, '0') + ':' + String(secs).padStart(2, '0');
+          } else {
+            document.getElementById('timerDisplay').textContent = '00:00 (Waktu Habis)';
+            document.getElementById('timerExpiredBanner').style.display = 'block';
+          }
+        }, 1000);
+      }
+
+      function renderEvaluationQuestions() {
+        const mcqContainer = document.getElementById('mcqListContainer');
+        const essayContainer = document.getElementById('essayListContainer');
+        const letters = ['a', 'b', 'c', 'd', 'e'];
+
+        mcqContainer.innerHTML = state.evalData.mcq.map(function (q, qIdx) {
+          const optsHtml = letters.map(function (lt) {
+            const upper = lt.toUpperCase();
+            const isSel = state.evalData.answersPg[qIdx] === upper;
+            return '<button type="button" class="mcq-option' + (isSel ? ' selected' : '') + '" id="mcqOpt_' + qIdx + '_' + upper + '" onclick="selectMcqOption(' + qIdx + ', \'' + upper + '\')">' +
+              '<span class="mcq-letter-badge">' + lt + '</span> <span>' + escHtml(q.options[lt]) + '</span>' +
+              '</button>';
+          }).join('');
+
+          return '<div class="mcq-card" id="mcqCard_' + qIdx + '">' +
+            '<div><strong>' + q.no + '. ' + escHtml(q.question) + '</strong></div>' +
+            '<div>' + optsHtml + '</div>' +
+            '<div id="mcqReview_' + qIdx + '" style="margin-top:9px; font-size:0.93rem;"></div>' +
+            '</div>';
+        }).join('');
+
+        essayContainer.innerHTML = state.evalData.essay.map(function (u, uIdx) {
+          return '<div class="field" style="margin-bottom:16px;">' +
+            '<label for="essayInput_' + uIdx + '">' + escHtml(u.no) + '. ' + escHtml(u.question) + ' <span class="req-star">*</span></label>' +
+            '<textarea id="essayInput_' + uIdx + '" placeholder="Tuliskan jawaban uraianmu dengan lengkap dan jelas..." oninput="onEssayInput(' + uIdx + ', this.value)">' + escHtml(state.evalData.answersUraian[uIdx]) + '</textarea>' +
+            '</div>';
+        }).join('');
+
+        document.getElementById('evalFormContainer').style.display = 'block';
+        validateEvaluationForm();
+      }
+
+      window.selectMcqOption = function (qIdx, letterUpper) {
+        state.evalData.answersPg[qIdx] = letterUpper;
+        ['A', 'B', 'C', 'D', 'E'].forEach(function (lt) {
+          const el = document.getElementById('mcqOpt_' + qIdx + '_' + lt);
+          if (el) el.classList.toggle('selected', lt === letterUpper);
+        });
+        validateEvaluationForm();
+      };
+
+      window.onEssayInput = function (uIdx, val) {
+        state.evalData.answersUraian[uIdx] = val;
+        validateEvaluationForm();
+      };
+
+      function validateEvaluationForm() {
+        const pgCount = state.evalData.answersPg.filter(function (v) { return ['A', 'B', 'C', 'D', 'E'].indexOf(v) !== -1; }).length;
+        const essayCount = state.evalData.answersUraian.filter(function (v) { return String(v || '').trim().length > 0; }).length;
+
+        document.getElementById('evalProgressCounter').textContent =
+          'Terjawab: ' + pgCount + '/20 PG • ' + essayCount + '/5 Uraian';
+
+        const canSubmit = (pgCount === 20 && essayCount === 5 && state.evalData.attemptUsed < CONFIG_CLIENT.MAX_ATTEMPT);
+        document.getElementById('btnSubmitEval').disabled = !canSubmit;
+      }
+
+      window.submitEvaluasi = function () {
+        const btn = document.getElementById('btnSubmitEval');
+        const statusEl = document.getElementById('evalSyncStatus');
+        const retryBtn = document.getElementById('btnRetryEval');
+
+        if (!state.evalData.pendingSubmissionId) {
+          state.evalData.pendingSubmissionId = generateId('SUB-EVAL');
+        }
+
+        const elapsedSec = Math.max(1, Math.round((Date.now() - (state.evalData.evalStartedMs || Date.now())) / 1000));
+        const durasiText = Math.floor(elapsedSec / 60) + ' menit ' + (elapsedSec % 60) + ' detik';
+
+        btn.disabled = true;
+        retryBtn.style.display = 'none';
+        statusEl.style.display = 'inline-flex';
+        statusEl.className = 'sync-status sync-sending';
+        statusEl.textContent = 'Mengirim…';
+
+        const payload = {
+          sessionId: state.sessionId,
+          submissionId: state.evalData.pendingSubmissionId,
+          nama: state.student.nama,
+          kelas: state.student.kelas,
+          absen: state.student.absen,
+          kelompok: state.student.kelompok,
+          durasi: durasiText,
+          answersPg: state.evalData.answersPg.slice(),
+          answersUraian: state.evalData.answersUraian.map(function (s) { return s.trim(); })
+        };
+
+        callServer('evaluasi', payload).then(function (res) {
+          if (res.ok) {
+            state.evalData.pendingSubmissionId = '';
+            state.evalData.attemptUsed = Number(res.attempt) || (state.evalData.attemptUsed + 1);
+            state.evalData.lastResult = res;
+            state.evalData.submissions.push(res);
+
+            if (state.evalData.bestMcqScore === null || res.mcqScore > state.evalData.bestMcqScore) {
+              state.evalData.bestMcqScore = res.mcqScore;
+            }
+
+            statusEl.className = 'sync-status sync-ok';
+            statusEl.textContent = '✓ Tersimpan';
+
+            renderEvaluationResult(res);
+            updateAttemptBanner();
+            updateProgressUI();
+          } else if (res.offlineDemo) {
+            state.evalData.pendingSubmissionId = '';
+            state.evalData.attemptUsed += 1;
+            const localRes = {
+              ok: true,
+              offlineDemo: true,
+              attempt: state.evalData.attemptUsed,
+              maxAttempt: CONFIG_CLIENT.MAX_ATTEMPT,
+              isLastAttempt: state.evalData.attemptUsed >= CONFIG_CLIENT.MAX_ATTEMPT,
+              totalPg: 20,
+              essayStatus: 'Tersimpan lokal (Mode Uji)'
+            };
+            state.evalData.lastResult = localRes;
+            state.evalData.submissions.push(localRes);
+
+            statusEl.className = 'sync-status sync-sending';
+            statusEl.textContent = 'Tersimpan lokal (Mode Uji). Gunakan "Unduh Hasil (CSV)" di footer.';
+            renderEvaluationResult(localRes);
+            updateAttemptBanner();
+            updateProgressUI();
+          } else {
+            enqueueFailed('evaluasi', payload);
+            btn.disabled = false;
+            statusEl.className = 'sync-status sync-err';
+            statusEl.textContent = 'Gagal mengirim evaluasi: ' + res.error;
+            retryBtn.style.display = 'inline-flex';
+          }
+        });
+      };
+
+      function renderEvaluationResult(res) {
+        const resCard = document.getElementById('evalResultCard');
+        resCard.style.display = 'block';
+
+        if (res.offlineDemo) {
+          resCard.innerHTML = '<h3>📋 Jawaban Evaluasi Direkam (Mode Uji Lokal)</h3>' +
+            '<div class="info-callout" style="margin-top:10px;">' +
+            'Seluruh <strong>20 jawaban Pilihan Ganda</strong> dan <strong>5 jawaban Uraian</strong> kamu sudah direkam di sesi peramban ini.<br />' +
+            'Karena aplikasi belum dihubungkan ke server Google Apps Script (kunci jawaban disimpan aman di server), skor otomatis belum dihitung. Silakan klik tombol <strong>📥 Unduh Hasil (CSV)</strong> di bagian bawah halaman untuk mengunduh rekaman jawabanmu, atau lanjutkan ke <strong>Menu 5: Refleksi Akhir</strong>.' +
+            '</div>';
+          resCard.scrollIntoView({ behavior: 'smooth' });
+          return;
+        }
+
+        if (Array.isArray(res.perItem)) {
+          res.perItem.forEach(function (isCorrect, idx) {
+            const chosen = state.evalData.answersPg[idx];
+            const optEl = document.getElementById('mcqOpt_' + idx + '_' + chosen);
+            if (optEl) {
+              optEl.classList.remove('opt-correct', 'opt-wrong');
+              optEl.classList.add(isCorrect ? 'opt-correct' : 'opt-wrong');
+            }
+            const revEl = document.getElementById('mcqReview_' + idx);
+            if (revEl) {
+              if (res.isLastAttempt && Array.isArray(res.review) && res.review[idx]) {
+                const itemRev = res.review[idx];
+                revEl.innerHTML = '<span style="color:' + (isCorrect ? 'var(--success)' : 'var(--danger)') + '; font-weight:700;">' +
+                  (isCorrect ? '✓ Benar' : '✗ Salah (Kunci: ' + escHtml(itemRev.correctOption) + ')') +
+                  '</span> — ' + escHtml(itemRev.explanation);
+              } else {
+                revEl.innerHTML = '<span style="color:' + (isCorrect ? 'var(--success)' : 'var(--danger)') + '; font-weight:700;">' +
+                  (isCorrect ? '✓ Jawaban Benar' : '✗ Jawaban Belum Tepat') + '</span>';
+              }
+            }
+          });
+        }
+
+        let reviewSummaryHtml = '';
+        if (res.isLastAttempt && Array.isArray(res.essayGuide)) {
+          reviewSummaryHtml += '<div class="rambu-box" style="margin-top:16px;">' +
+            '<strong>📘 Pedoman Jawaban Soal Uraian (Terbuka Setelah Percobaan Terakhir):</strong>' +
+            '<ol style="margin:8px 0 0; padding-left:20px;">' +
+            res.essayGuide.map(function (g) {
+              return '<li style="margin-bottom:6px;"><strong>' + escHtml(g.no) + ':</strong> ' + escHtml(g.guide) + '</li>';
+            }).join('') +
+            '</ol></div>';
+        } else {
+          const sisa = Math.max(0, CONFIG_CLIENT.MAX_ATTEMPT - res.attempt);
+          reviewSummaryHtml += '<div class="info-callout" style="margin-top:16px;">' +
+            'Kunci jawaban PG, pembahasan soal, dan pedoman uraian akan ditampilkan setelah percobaan terakhir selesai. Kamu masih memiliki <strong>' + sisa + '</strong> kesempatan percobaan lagi jika ingin memperbaiki.' +
+            '<div style="margin-top:10px;"><button type="button" class="btn btn-accent btn-sm" onclick="prepareNextAttempt()">🔄 Kerjakan Percobaan Berikutnya</button></div>' +
+            '</div>';
+        }
+
+        resCard.innerHTML = '<h3>📊 Hasil Pengiriman Evaluasi (Percobaan ke-' + res.attempt + ' dari ' + res.maxAttempt + ')</h3>' +
+          '<div class="form-grid" style="margin-top:14px;">' +
+          '<div class="card" style="margin:0; background:var(--success-soft); border-color:var(--success);">' +
+          '<small>Jawaban PG Benar</small><div style="font-family:var(--font-display); font-size:1.55rem; font-weight:800; color:var(--success);">' + res.correct + ' / ' + res.totalPg + '</div></div>' +
+          '<div class="card" style="margin:0; background:var(--danger-soft); border-color:var(--danger);">' +
+          '<small>Jawaban PG Salah</small><div style="font-family:var(--font-display); font-size:1.55rem; font-weight:800; color:var(--danger);">' + res.wrong + ' / ' + res.totalPg + '</div></div>' +
+          '<div class="card" style="margin:0; background:var(--sky-soft); border-color:var(--sky);">' +
+          '<small>Skor Pilihan Ganda (Maks 60)</small><div style="font-family:var(--font-display); font-size:1.55rem; font-weight:800; color:var(--primary);">' + res.mcqScore + ' / 60</div></div>' +
+          '<div class="card" style="margin:0; background:var(--accent-soft); border-color:var(--accent);">' +
+          '<small>Status Soal Uraian (Maks 40)</small><div style="font-family:var(--font-display); font-size:1.08rem; font-weight:800; color:var(--accent-dark);">Menunggu penilaian guru</div></div>' +
+          '</div>' +
+          reviewSummaryHtml;
+
+        if (res.isLastAttempt) {
+          document.getElementById('btnSubmitEval').disabled = true;
+        }
+        resCard.scrollIntoView({ behavior: 'smooth' });
+      }
+
+      window.prepareNextAttempt = function () {
+        if (state.evalData.attemptUsed >= CONFIG_CLIENT.MAX_ATTEMPT) return;
+        state.evalData.pendingSubmissionId = '';
+        document.getElementById('evalSyncStatus').style.display = 'none';
+        validateEvaluationForm();
+        document.getElementById('evalFormContainer').scrollIntoView({ behavior: 'smooth' });
+      };
+
+      // ======================================================================
+      // 9. MENU 5: REFLEKSI AKHIR PEMBELAJARAN
+      // ======================================================================
+      window.selectReflectOption = function (field, value, btnEl) {
+        state.finalReflection[field] = value;
+        const groupId = field === 'perasaan' ? 'groupPerasaan' : 'groupPemahaman';
+        document.getElementById(groupId).querySelectorAll('.radio-pill').forEach(function (b) {
+          b.classList.remove('active');
+        });
+        if (btnEl) btnEl.classList.add('active');
+        validateFinalReflection();
+      };
+
+      function validateFinalReflection() {
+        const valid = Boolean(state.finalReflection.perasaan && state.finalReflection.pemahaman);
+        document.getElementById('btnSubmitRefleksi').disabled = !valid;
+      }
+
+      window.submitRefleksi = function () {
+        const btn = document.getElementById('btnSubmitRefleksi');
+        const statusEl = document.getElementById('refSyncStatus');
+        const retryBtn = document.getElementById('btnRetryRefleksi');
+
+        if (!state.finalReflection.pendingSubmissionId) {
+          state.finalReflection.pendingSubmissionId = generateId('SUB-REF');
+        }
+
+        const refK1 = state.reflectionsAct[1].filter(function (v) { return v === 'Sudah'; }).length + '/4';
+        const refK2 = state.reflectionsAct[2].filter(function (v) { return v === 'Sudah'; }).length + '/4';
+        const refK3 = state.reflectionsAct[3].filter(function (v) { return v === 'Sudah'; }).length + '/4';
+
+        btn.disabled = true;
+        retryBtn.style.display = 'none';
+        statusEl.style.display = 'inline-flex';
+        statusEl.className = 'sync-status sync-sending';
+        statusEl.textContent = 'Mengirim…';
+
+        const payload = {
+          sessionId: state.sessionId,
+          submissionId: state.finalReflection.pendingSubmissionId,
+          nama: state.student.nama,
+          kelas: state.student.kelas,
+          refK1: refK1,
+          refK2: refK2,
+          refK3: refK3,
+          perasaan: state.finalReflection.perasaan,
+          pemahaman: state.finalReflection.pemahaman,
+          menarik: document.getElementById('refMenarik').value.trim() || '-',
+          kesulitan: document.getElementById('refKesulitan').value.trim() || '-',
+          inginPelajari: document.getElementById('refIngin').value.trim() || '-'
+        };
+
+        callServer('refleksi', payload).then(function (res) {
+          if (res.ok || res.offlineDemo) {
+            state.finalReflection.pendingSubmissionId = '';
+            state.finalReflection.submitted = true;
+            statusEl.className = res.ok ? 'sync-status sync-ok' : 'sync-status sync-sending';
+            statusEl.textContent = res.ok ? '✓ Tersimpan' : 'Tersimpan lokal (Mode Uji)';
+            updateProgressUI();
+            renderFinalSummary(res.offlineDemo);
+          } else {
+            enqueueFailed('refleksi', payload);
+            btn.disabled = false;
+            statusEl.className = 'sync-status sync-err';
+            statusEl.textContent = 'Gagal mengirim refleksi: ' + res.error;
+            retryBtn.style.display = 'inline-flex';
+          }
+        });
+      };
+
+      function renderFinalSummary(isOffline) {
+        const doneCount = [1, 2, 3].filter(function (n) { return state.activitiesDone[n]; }).length;
+        const bestPgText = state.evalData.bestMcqScore !== null
+          ? (state.evalData.bestMcqScore + ' / 60')
+          : (isOffline ? 'Terekam Lokal (Mode Uji)' : '-');
+
+        const card = document.getElementById('finalSummaryCard');
+        card.style.display = 'block';
+        card.innerHTML = '<h2 style="margin-bottom:8px;">🎉 Terima Kasih, ' + escHtml(state.student.nama) + '!</h2>' +
+          '<p style="margin-top:0;">Seluruh rangkaian pembelajaran <strong>Konsep Logistik pada Bidang MPLB</strong> telah selesai.</p>' +
+          '<div class="form-grid" style="margin-top:14px;">' +
+          '<div style="background:rgba(255,255,255,0.16); padding:14px; border-radius:14px;">' +
+          '<small>Kegiatan Selesai</small><div style="font-size:1.35rem; font-weight:800;">' + doneCount + ' dari 3 Kegiatan</div></div>' +
+          '<div style="background:rgba(255,255,255,0.16); padding:14px; border-radius:14px;">' +
+          '<small>Skor PG Terbaik</small><div style="font-size:1.35rem; font-weight:800;">' + escHtml(bestPgText) + '</div></div>' +
+          '<div style="background:rgba(255,255,255,0.16); padding:14px; border-radius:14px;">' +
+          '<small>Tingkat Pemahaman</small><div style="font-size:1.2rem; font-weight:800;">' + escHtml(state.finalReflection.pemahaman) + '</div></div>' +
+          '</div>';
+        card.scrollIntoView({ behavior: 'smooth' });
+      }
+
+      // ======================================================================
+      // 9B. PANEL LOGIN GURU, GENERATOR LINK NETLIFY, & PENILAIAN URAIAN
+      // ======================================================================
+      window.scrollToTeacherSection = function (sectionId) {
+        const el = document.getElementById(sectionId);
+        if (el) el.scrollIntoView({ behavior: 'smooth' });
+      };
+
+      window.loginTeacherFromMain = function () {
+        const mainPin = document.getElementById('inputGuruPinMain').value.trim();
+        document.getElementById('inputGuruPinSide').value = mainPin;
+        loginTeacher();
+      };
+
+      window.loginTeacher = function () {
+        const pin = document.getElementById('inputGuruPinSide').value.trim() ||
+                    document.getElementById('inputGuruPinMain').value.trim();
+        const sideMsg = document.getElementById('guruLoginSideMsg');
+        const mainMsg = document.getElementById('guruLoginMainMsg');
+
+        if (!pin) {
+          sideMsg.style.color = 'var(--danger)';
+          sideMsg.textContent = 'Masukkan PIN Guru terlebih dahulu.';
+          mainMsg.style.color = 'var(--danger)';
+          mainMsg.textContent = 'Masukkan PIN Guru terlebih dahulu.';
+          return;
+        }
+
+        sideMsg.style.color = 'var(--primary)';
+        sideMsg.textContent = 'Memverifikasi...';
+        mainMsg.style.color = 'var(--primary)';
+        mainMsg.textContent = 'Memverifikasi PIN Guru...';
+
+        callServer('guruLogin', { guruPin: pin }).then(function (res) {
+          const localMatch = (pin === CONFIG_CLIENT.GURU_PIN);
+          if (res.ok || (res.offlineDemo && localMatch)) {
+            state.teacherAuth.loggedIn = true;
+            state.teacherAuth.pin = pin;
+            sideMsg.textContent = '';
+            mainMsg.textContent = '';
+            activateTeacherDashboardUI(res.ok);
+            toggleSidebar(false);
+          } else {
+            const errTxt = res.error || 'PIN Guru tidak sesuai.';
+            sideMsg.style.color = 'var(--danger)';
+            sideMsg.textContent = errTxt;
+            mainMsg.style.color = 'var(--danger)';
+            mainMsg.textContent = errTxt;
+          }
+        });
+      };
+
+      function activateTeacherDashboardUI(isConnected) {
+        document.getElementById('sideTeacherLoginBox').style.display = 'none';
+        document.getElementById('sideTeacherLoggedBox').style.display = 'block';
+        document.getElementById('sideTeacherName').textContent = CONFIG_CLIENT.GURU;
+
+        document.getElementById('teacherMainLoginCard').style.display = 'none';
+        document.getElementById('teacherDashboardBody').style.display = 'block';
+        document.getElementById('btnTeacherTopLogout').style.display = 'inline-flex';
+
+        const currentUrl = CONFIG_CLIENT.APPS_SCRIPT_URL || '';
+        document.getElementById('teacherScriptUrlInput').value = currentUrl;
+        if (currentUrl) {
+          updateStudentShareLinkBox(currentUrl);
+        }
+        if (isConnected) {
+          loadTeacherDashboard();
+        }
+      }
+
+      window.logoutTeacher = function () {
+        state.teacherAuth.loggedIn = false;
+        state.teacherAuth.pin = '';
+        state.teacherAuth.lastFetchedData = null;
+        document.getElementById('inputGuruPinSide').value = '';
+        document.getElementById('inputGuruPinMain').value = '';
+        document.getElementById('sideTeacherLoginBox').style.display = 'block';
+        document.getElementById('sideTeacherLoggedBox').style.display = 'none';
+        document.getElementById('teacherMainLoginCard').style.display = 'block';
+        document.getElementById('teacherDashboardBody').style.display = 'none';
+        document.getElementById('btnTeacherTopLogout').style.display = 'none';
+        switchRole('student');
+      };
+
+      function updateStudentShareLinkBox(scriptUrl) {
+        const cleanUrl = String(scriptUrl || '').trim();
+        const box = document.getElementById('shareStudentLinkBox');
+        if (!cleanUrl) {
+          box.style.display = 'none';
+          return;
+        }
+        const baseSite = window.location.origin + window.location.pathname;
+        const shareUrl = baseSite + '?api=' + encodeURIComponent(cleanUrl);
+        document.getElementById('studentShareUrlOutput').value = shareUrl;
+        box.style.display = 'block';
+      }
+
+      window.saveTeacherScriptUrl = function () {
+        const raw = document.getElementById('teacherScriptUrlInput').value.trim();
+        const fb = document.getElementById('teacherConnFeedback');
+        if (!raw || raw.indexOf('https://script.google.com/') !== 0) {
+          fb.style.color = 'var(--danger)';
+          fb.textContent = 'Masukkan URL Web App Google Apps Script yang diawali https://script.google.com/...';
+          return;
+        }
+        CONFIG_CLIENT.APPS_SCRIPT_URL = raw;
+        try {
+          localStorage.setItem('mpi_mplb_script_url', raw);
+        } catch (e) {}
+
+        fb.style.color = 'var(--primary)';
+        fb.textContent = 'Menguji koneksi ke Google Sheets...';
+
+        callServer('ping', {}).then(function (res) {
+          if (res.ok) {
+            state.isStandaloneOffline = false;
+            document.getElementById('standaloneBanner').style.display = 'none';
+            document.getElementById('connDot').className = 'conn-dot ok';
+            document.getElementById('connLabel').textContent = 'Terhubung';
+            fb.style.color = 'var(--success)';
+            fb.textContent = '✓ Berhasil terhubung ke Spreadsheet: ' + (res.spreadsheetName || 'Google Sheets');
+            updateStudentShareLinkBox(raw);
+            loadTeacherDashboard();
+          } else {
+            fb.style.color = 'var(--danger)';
+            fb.textContent = 'Gagal terhubung: ' + (res.error || 'Periksa akses Web App (Anyone).');
+          }
+        });
+      };
+
+      window.copyStudentShareLink = function () {
+        const inp = document.getElementById('studentShareUrlOutput');
+        const st = document.getElementById('copyLinkStatus');
+        inp.focus();
+        inp.select();
+        let copied = false;
+        try {
+          copied = document.execCommand('copy');
+        } catch (e) {
+          copied = false;
+        }
+        st.textContent = copied
+          ? '✓ Link siswa berhasil disalin! Silakan tempel dan bagikan ke grup kelas.'
+          : 'Silakan tekan Ctrl+C (atau tahan lalu Salin) pada kotak link di atas.';
+      };
+
+      window.loadTeacherDashboard = function () {
+        const sumGrid = document.getElementById('teacherSummaryGrid');
+        const subContainer = document.getElementById('teacherSubmissionsContainer');
+        subContainer.innerHTML = '<p style="color:var(--primary); font-weight:700;">Memuat data dari Google Sheets...</p>';
+
+        callServer('guruGetData', { guruPin: state.teacherAuth.pin }).then(function (res) {
+          if (!res.ok) {
+            subContainer.innerHTML = '<div class="story-box"><strong>Belum dapat memuat data dari Sheets:</strong> ' +
+              escHtml(res.error || 'Pastikan URL Google Apps Script sudah dihubungkan pada langkah 1 di atas.') + '</div>';
+            return;
+          }
+
+          state.teacherAuth.lastFetchedData = res;
+          const s = res.summary || {};
+          sumGrid.innerHTML =
+            '<div class="teacher-subcard" style="margin:0;"><small>Total Siswa Login</small><div style="font-size:1.5rem; font-weight:800; color:var(--primary);">' + (s.totalLogin || 0) + '</div></div>' +
+            '<div class="teacher-subcard" style="margin:0;"><small>Evaluasi Terkumpul</small><div style="font-size:1.5rem; font-weight:800; color:var(--secondary);">' + (s.totalSubmissions || 0) + '</div></div>' +
+            '<div class="teacher-subcard" style="margin:0;"><small>Sudah Dinilai Penuh</small><div style="font-size:1.5rem; font-weight:800; color:var(--success);">' + (s.gradedCount || 0) + '</div></div>' +
+            '<div class="teacher-subcard" style="margin:0;"><small>Rata-rata Nilai Akhir</small><div style="font-size:1.5rem; font-weight:800; color:var(--accent-dark);">' + (s.avgFinalScore !== null ? s.avgFinalScore : '-') + '</div></div>';
+
+          const list = Array.isArray(res.submissions) ? res.submissions : [];
+          if (list.length === 0) {
+            subContainer.innerHTML = '<p style="color:var(--text-muted);">Belum ada pengiriman evaluasi dari siswa di Google Sheets.</p>';
+            return;
+          }
+
+          subContainer.innerHTML = list.map(function (item, idx) {
+            const safeSubId = escHtml(item.submissionId);
+            let uraianHtml = '';
+            for (let u = 0; u < 5; u++) {
+              const scVal = item.uraianScores[u] !== '' ? item.uraianScores[u] : '';
+              uraianHtml += '<div style="padding:10px; border-radius:12px; background:var(--bg-surface); border:1px solid var(--border); margin-top:8px;">' +
+                '<div style="display:flex; flex-wrap:wrap; justify-content:space-between; gap:8px; align-items:center;">' +
+                '<strong>Jawaban Uraian U' + (u + 1) + ':</strong>' +
+                '<div style="display:flex; align-items:center; gap:6px;">' +
+                '<label for="gScore_' + idx + '_' + u + '" style="font-size:0.85rem; font-weight:700;">Skor (0–8):</label>' +
+                '<input type="number" id="gScore_' + idx + '_' + u + '" class="score-mini-input" min="0" max="8" step="1" value="' + scVal + '" style="width:78px;" />' +
+                '</div></div>' +
+                '<p style="margin:6px 0 0; font-size:0.93rem; white-space:pre-wrap;">' + escHtml(item.uraianAnswers[u]) + '</p>' +
+                '</div>';
+            }
+
+            return '<div class="teacher-subcard">' +
+              '<div style="display:flex; flex-wrap:wrap; justify-content:space-between; gap:8px; align-items:center;">' +
+              '<div><strong style="font-size:1.05rem;">' + escHtml(item.nama) + '</strong> (' + escHtml(item.kelas) + ' • Absen ' + escHtml(item.absen) + ') ' +
+              '<span class="badge badge-sky">Percobaan ke-' + item.attempt + '</span></div>' +
+              '<div style="font-weight:800; color:var(--primary);">Skor PG: ' + item.mcqScore + '/60 • Nilai Akhir: <span id="gFinalBadge_' + idx + '">' + (item.finalScore !== '' ? item.finalScore + ' (' + escHtml(item.predikat) + ')' : 'Menunggu penilaian') + '</span></div>' +
+              '</div>' +
+              uraianHtml +
+              '<div style="display:flex; flex-wrap:wrap; align-items:center; gap:10px; margin-top:12px;">' +
+              '<button type="button" class="btn btn-primary btn-sm" onclick="saveTeacherUraianScore(\'' + safeSubId + '\', ' + idx + ')">💾 Simpan Nilai Uraian</button>' +
+              '<span id="gSaveStatus_' + idx + '" style="font-weight:700; font-size:0.9rem;"></span>' +
+              '</div></div>';
+          }).join('');
+        });
+      };
+
+      window.saveTeacherUraianScore = function (submissionId, idx) {
+        const stEl = document.getElementById('gSaveStatus_' + idx);
+        const scores = [];
+        for (let u = 0; u < 5; u++) {
+          const raw = document.getElementById('gScore_' + idx + '_' + u).value.trim();
+          const num = Number(raw);
+          if (raw === '' || isNaN(num) || num < 0 || num > 8) {
+            stEl.style.color = 'var(--danger)';
+            stEl.textContent = 'Isi semua skor U1–U5 dengan angka 0 sampai 8.';
+            return;
+          }
+          scores.push(num);
+        }
+
+        stEl.style.color = 'var(--primary)';
+        stEl.textContent = 'Menyimpan ke Google Sheets...';
+
+        callServer('guruSaveScore', {
+          guruPin: state.teacherAuth.pin,
+          submissionId: submissionId,
+          scores: scores
+        }).then(function (res) {
+          if (res.ok) {
+            stEl.style.color = 'var(--success)';
+            stEl.textContent = '✓ Tersimpan! Nilai akhir: ' + res.finalScore + ' (' + res.predikat + ')';
+            const badge = document.getElementById('gFinalBadge_' + idx);
+            if (badge) badge.textContent = res.finalScore + ' (' + res.predikat + ')';
+          } else {
+            stEl.style.color = 'var(--danger)';
+            stEl.textContent = 'Gagal: ' + (res.error || 'Terjadi kesalahan.');
+          }
+        });
+      };
+
+      window.exportTeacherSpreadsheetCsv = function () {
+        const fb = document.getElementById('teacherExportFeedback');
+        const data = state.teacherAuth.lastFetchedData;
+        if (!data || (!Array.isArray(data.submissions) && !Array.isArray(data.activities))) {
+          fb.style.color = 'var(--danger)';
+          fb.textContent = 'Klik "Muat Ulang Data Sheets" terlebih dahulu sebelum mengekspor data dan nilai siswa.';
+          return;
+        }
+
+        const rows = [
+          [
+            'No.', 'ID Sesi', 'Nama Siswa', 'Kelas', 'No. Absen', 'Kelompok',
+            'Percobaan Ke', 'Benar PG', 'Salah PG', 'Skor PG (Maks 60)',
+            'Skor U1', 'Skor U2', 'Skor U3', 'Skor U4', 'Skor U5',
+            'Skor Uraian Total (Maks 40)', 'Nilai Akhir (0-100)', 'Predikat', 'Status Tuntas', 'Waktu Kumpul'
+          ]
+        ];
+
+        const subs = Array.isArray(data.submissions) ? data.submissions : [];
+        if (subs.length > 0) {
+          subs.forEach(function (item, i) {
+            rows.push([
+              i + 1,
+              item.sessionId,
+              item.nama,
+              item.kelas,
+              item.absen,
+              item.kelompok,
+              item.attempt,
+              item.correct,
+              item.wrong,
+              item.mcqScore,
+              item.uraianScores[0] !== '' ? item.uraianScores[0] : '',
+              item.uraianScores[1] !== '' ? item.uraianScores[1] : '',
+              item.uraianScores[2] !== '' ? item.uraianScores[2] : '',
+              item.uraianScores[3] !== '' ? item.uraianScores[3] : '',
+              item.uraianScores[4] !== '' ? item.uraianScores[4] : '',
+              item.uraianTotal !== '' ? item.uraianTotal : '',
+              item.finalScore !== '' ? item.finalScore : '',
+              item.predikat || 'Menunggu penilaian',
+              item.statusTuntas || '',
+              item.waktuKumpul || ''
+            ]);
+          });
+        } else if (Array.isArray(data.activities)) {
+          data.activities.forEach(function (act, i) {
+            rows.push([
+              i + 1, act.sessionId, act.nama, act.kelas, act.absen, act.kelompok,
+              '-', '', '', '', '', '', '', '', '', '', '', act.status || 'Sedang belajar', '', act.waktuMulai || ''
+            ]);
+          });
+        }
+
+        const csvContent = '\uFEFF' + rows.map(function (r) {
+          return r.map(function (cell) {
+            return '"' + String(cell === null || cell === undefined ? '' : cell).replace(/"/g, '""') + '"';
+          }).join(',');
+        }).join('\r\n');
+
+        const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+        const link = document.createElement('a');
+        link.href = URL.createObjectURL(blob);
+        link.download = 'Data_dan_Nilai_Siswa_MPI_MPLB.csv';
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+
+        fb.style.color = 'var(--success)';
+        fb.textContent = '✓ File Data_dan_Nilai_Siswa_MPI_MPLB.csv berhasil diunduh dan siap dibuka di Excel / Google Sheets.';
+      };
+
+      // ======================================================================
+      // 10. UJI KONEKSI, PENGATURAN URL STANDALONE, & UNDUH CSV MODE UJI
+      // ======================================================================
+      window.toggleUrlConfigBox = function () {
+        const box = document.getElementById('urlConfigBox');
+        const isHidden = box.style.display === 'none';
+        box.style.display = isHidden ? 'block' : 'none';
+        if (isHidden) {
+          document.getElementById('inputScriptUrl').value = CONFIG_CLIENT.APPS_SCRIPT_URL || '';
+        }
+      };
+
+      window.saveCustomScriptUrl = function () {
+        const raw = document.getElementById('inputScriptUrl').value.trim();
+        const fb = document.getElementById('urlConfigFeedback');
+        if (!raw || raw.indexOf('https://script.google.com/') !== 0) {
+          fb.style.color = 'var(--danger)';
+          fb.textContent = 'Masukkan URL Web App Google Apps Script yang valid (diawali https://script.google.com/...).';
+          return;
+        }
+        CONFIG_CLIENT.APPS_SCRIPT_URL = raw;
+        try {
+          localStorage.setItem('mpi_mplb_script_url', raw);
+        } catch (e) {}
+
+        fb.style.color = 'var(--primary)';
+        fb.textContent = 'Menguji koneksi ke Google Sheets...';
+
+        callServer('ping', {}).then(function (res) {
+          if (res.ok) {
+            state.isStandaloneOffline = false;
+            fb.style.color = 'var(--success)';
+            fb.textContent = '✓ Berhasil terhubung ke Spreadsheet: ' + (res.spreadsheetName || 'Google Sheets') + '!';
+            document.getElementById('connDot').className = 'conn-dot ok';
+            document.getElementById('connLabel').textContent = 'Terhubung';
+            setTimeout(function () {
+              document.getElementById('standaloneBanner').style.display = 'none';
+              if (state.currentMenu === 4) {
+                state.evalData.loaded = false;
+                loadQuestionsFromServer();
+              }
+            }, 900);
+          } else {
+            fb.style.color = 'var(--danger)';
+            fb.textContent = 'Gagal terhubung: ' + (res.error || 'Periksa izin akses Web App (Anyone).');
+          }
+        });
+      };
+
+      window.pingServer = function () {
+        const dot = document.getElementById('connDot');
+        const label = document.getElementById('connLabel');
+        dot.className = 'conn-dot';
+        label.textContent = 'Mengecek...';
+
+        callServer('ping', {}).then(function (res) {
+          if (res.ok) {
+            dot.className = 'conn-dot ok';
+            label.textContent = 'Terhubung';
+          } else {
+            dot.className = 'conn-dot err';
+            label.textContent = 'Tidak Terhubung';
+          }
+        });
+      };
+
+      window.downloadSessionCsv = function () {
+        const rows = [
+          ['Session ID', 'Nama', 'Kelas', 'No Absen', 'Kelompok', 'K1 Selesai', 'K2 Selesai', 'K3 Selesai', 'Skor PG Terbaik', 'Perasaan', 'Tingkat Pemahaman'],
+          [
+            state.sessionId,
+            state.student.nama,
+            state.student.kelas,
+            state.student.absen,
+            state.student.kelompok,
+            state.activitiesDone[1] ? 'Ya' : 'Belum',
+            state.activitiesDone[2] ? 'Ya' : 'Belum',
+            state.activitiesDone[3] ? 'Ya' : 'Belum',
+            state.evalData.bestMcqScore !== null ? state.evalData.bestMcqScore : '',
+            state.finalReflection.perasaan,
+            state.finalReflection.pemahaman
+          ]
+        ];
+        const csv = rows.map(function (r) {
+          return r.map(function (cell) {
+            return '"' + String(cell || '').replace(/"/g, '""') + '"';
+          }).join(',');
+        }).join('\n');
+
+        const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+        const link = document.createElement('a');
+        link.href = URL.createObjectURL(blob);
+        link.download = 'Hasil_MPI_Logistik_' + (state.student.nama || 'Siswa') + '.csv';
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+      };
+
+      // ======================================================================
+      // 11. INISIALISASI SAAT HALAMAN DIMUAT
+      // ======================================================================
+      function bootstrap() {
+        try {
+          const params = new URLSearchParams(window.location.search);
+          const apiParam = params.get('api');
+          if (apiParam && apiParam.indexOf('https://script.google.com/') === 0) {
+            CONFIG_CLIENT.APPS_SCRIPT_URL = apiParam.trim();
+            localStorage.setItem('mpi_mplb_script_url', CONFIG_CLIENT.APPS_SCRIPT_URL);
+          } else if (!CONFIG_CLIENT.APPS_SCRIPT_URL) {
+            const savedUrl = localStorage.getItem('mpi_mplb_script_url');
+            if (savedUrl) CONFIG_CLIENT.APPS_SCRIPT_URL = savedUrl.trim();
+          }
+        } catch (e) {}
+
+        applyIdentityLabels();
+        setupLoginHandlers();
+        resetMatch1();
+        renderSevenCards();
+        resetMatch2();
+        renderCahayaTable();
+        resetDocOrder();
+        renderActivityReflections();
+
+        ['case1_q1', 'case1_q2', 'case1_q3'].forEach(function (id) {
+          document.getElementById(id).addEventListener('input', function () { validateActivityForm(1); });
+        });
+        ['case2_q1', 'case2_q2'].forEach(function (id) {
+          document.getElementById(id).addEventListener('input', function () { validateActivityForm(2); });
+        });
+        ['case3_q1', 'case3_q2', 'case3_q3'].forEach(function (id) {
+          document.getElementById(id).addEventListener('input', function () { validateActivityForm(3); });
+        });
+
+        if (!state.isAppsScriptEnv && !String(CONFIG_CLIENT.APPS_SCRIPT_URL || '').trim()) {
+          state.isStandaloneOffline = true;
+          document.getElementById('standaloneBanner').style.display = 'block';
+          document.getElementById('btnCsvExport').style.display = 'inline-flex';
+        } else {
+          callServer('getConfig', {}).then(function (res) {
+            if (res.ok && res.config) {
+              if (res.config.guru) CONFIG_CLIENT.GURU = res.config.guru;
+              if (typeof res.config.sekolah === 'string') CONFIG_CLIENT.SEKOLAH = res.config.sekolah;
+              if (res.config.maxAttempt) CONFIG_CLIENT.MAX_ATTEMPT = Number(res.config.maxAttempt);
+              if (res.config.kkm) CONFIG_CLIENT.KKM = Number(res.config.kkm);
+              if (res.config.durasiMenit) CONFIG_CLIENT.DURASI_MENIT = Number(res.config.durasiMenit);
+              applyIdentityLabels();
+            }
+          });
+        }
+
+        updateProgressUI();
+      }
+
+      document.addEventListener('DOMContentLoaded', bootstrap);
+    })();
+  </script>
+</body>
+</html>
